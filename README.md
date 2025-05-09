@@ -30,7 +30,7 @@ to keep this package petite and approachable, but that does
 not reflect the true degree of testing that
 has been done. Also I assume that with net.Conn
 now available, almost anything can be made
-to run on top of, and so regular web servers
+to run on top of it, and so regular web servers
 etc will provide coverage.
 
 If you spot any issues, on any part, though,
