@@ -22,8 +22,19 @@ usable as possible would benefit all.
 
 Quality: alpha. The net.Conn implementation in particular is
 rough and ready. The scheduler and dispatcher
-are pretty solid. If you spot any issues though,
-on any part, please let me know.
+are pretty solid. They got pretty harsh testing
+over in https://github.com/glycerine/rpc25519 .
+The test here is just a minimal example. I have
+not brought other more punishing tests over 
+to keep this package minimal, but that does
+not reflect the true degree of testing that
+has been done. Also I assume that with net.Conn
+now available, almost anything can be made
+to run on top of, and so regular web servers
+etc will provide coverage.
+
+If you spot any issues, on any part, though,
+please let me know.
 
 ---
 Author: Jason E. Aten, Ph.D.
