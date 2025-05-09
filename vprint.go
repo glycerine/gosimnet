@@ -11,40 +11,14 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"4d63.com/tz"
 )
 
 // for tons of debug output
 var verbose bool = false
 var verboseVerbose bool = false
 
-var gtz *time.Location
-var chicago *time.Location
-var utcTz *time.Location
-var nyc *time.Location
-var londonTz *time.Location
-var frankfurt *time.Location
-
 func init() {
-
-	// do this is ~/.bashrc so we get the default.
-	os.Setenv("TZ", "America/chicago")
-
-	var err error
-	chicago, err = tz.LoadLocation("America/Chicago")
-	panicOn(err)
-	utcTz, err = tz.LoadLocation("UTC")
-	panicOn(err)
-	nyc, err = tz.LoadLocation("America/New_York")
-	panicOn(err)
-	frankfurt, err = tz.LoadLocation("Europe/Berlin")
-	panicOn(err)
-	londonTz, err = tz.LoadLocation("Europe/London")
-	panicOn(err)
-
-	//gtz = chicago
-	gtz = utcTz
+	os.Setenv("TZ", "UTC")
 }
 
 const rfc3339MsecTz0 = "2006-01-02T15:04:05.000Z07:00"
@@ -57,8 +31,6 @@ func pp(format string, a ...interface{}) {
 		tsPrintf(format, a...)
 	}
 }
-
-func zz(format string, a ...interface{}) {}
 
 // useful during git bisect
 var forceQuiet = false
@@ -73,23 +45,23 @@ func alwaysPrintf(format string, a ...interface{}) {
 	tsPrintf(format, a...)
 }
 
-var TsPrintfMut sync.Mutex
+var tsPrintfMut sync.Mutex
 
 // time-stamped printf
 func tsPrintf(format string, a ...interface{}) {
-	TsPrintfMut.Lock()
+	tsPrintfMut.Lock()
 	if showPid {
 		printf("\n%s [pid %v] %s ", fileLine(3), myPid, ts())
 	} else {
 		printf("\n%s %s ", fileLine(3), ts())
 	}
 	printf(format+"\n", a...)
-	TsPrintfMut.Unlock()
+	tsPrintfMut.Unlock()
 }
 
 // get timestamp for logging purposes
 func ts() string {
-	return time.Now().In(gtz).Format("2006-01-02 15:04:05.999 -0700 MST")
+	return time.Now().Format("2006-01-02 15:04:05.999 -0700 MST")
 	//return time.Now().In(nyc).Format("2006-01-02 15:04:05.999 -0700 MST")
 }
 
@@ -220,15 +192,3 @@ func stopOn(err error) {
 	fmt.Fprintf(os.Stderr, "%s: %v\n", fileLine(2), err.Error())
 	os.Exit(1)
 }
-
-/*func fileLine(depth int) string {
-	_, fileName, fileLine, ok := runtime.Caller(depth)
-	var s string
-	if ok {
-		s = fmt.Sprintf("%s:%d", path.Base(fileName), fileLine)
-	} else {
-		s = ""
-	}
-	return s
-}
-*/
