@@ -20,9 +20,10 @@ Since synctest is in the experimental phase,
 getting early feedback in now to make it as
 usable as possible would benefit all.
 
-The net.Conn implementation in particular is
-rough and ready. If you spot any issues, 
-please let me know.
+Quality: alpha. The net.Conn implementation in particular is
+rough and ready. The scheduler and dispatcher
+are pretty solid. If you spot any issues though,
+on any part, please let me know.
 
 ---
 Author: Jason E. Aten, Ph.D.
