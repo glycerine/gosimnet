@@ -117,7 +117,7 @@ type mop struct {
 	completeTm time.Time
 
 	kind mopkind
-	msg  *Message
+	msg  *message
 
 	sendmop *mop // for reads, which send did we get?
 	readmop *mop // for sends, which read did we go to?
@@ -807,7 +807,7 @@ func (s *simnet) handleSend(send *mop) {
 		// make a copy _before_ the sendMessage() call returns,
 		// so they can recycle or do whatever without data racing with us.
 		// Weird: even with this, the Fragment is getting
-		// races, not the Message.
+		// races, not the message.
 		send.msg = send.msg.CopyForSimNetSend()
 
 		send.target.preArrQ.add(send)
@@ -1363,7 +1363,7 @@ func (s *simnet) createNewTimer(origin *simnode, dur time.Duration, begin time.T
 }
 
 // readMessage reads a framed message from conn.
-func (s *simnet) readMessage(conn net.Conn) (msg *Message, err error) {
+func (s *simnet) readMessage(conn net.Conn) (msg *message, err error) {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1388,7 +1388,7 @@ func (s *simnet) readMessage(conn net.Conn) (msg *Message, err error) {
 	return
 }
 
-func (s *simnet) sendMessage(conn net.Conn, msg *Message, timeout *time.Duration) error {
+func (s *simnet) sendMessage(conn net.Conn, msg *message, timeout *time.Duration) error {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1443,7 +1443,7 @@ func newReadMop(isCli bool) (op *mop) {
 	return
 }
 
-func newSendMop(msg *Message, isCli bool) (op *mop) {
+func newSendMop(msg *message, isCli bool) (op *mop) {
 	op = &mop{
 		originCli: isCli,
 		msg:       msg,
@@ -1557,16 +1557,16 @@ func (s *simnet) registerServer(srv *Server, srvNetAddr *SimNetAddr) (newCliConn
 	return
 }
 
-type alteration int // on clients or servers, any simnode
+type Alteration int // on clients or servers, any simnode
 
 const (
-	SHUTDOWN    alteration = 1
-	PARTITION   alteration = 2
-	UNPARTITION alteration = 3
-	RESTART     alteration = 4
+	SHUTDOWN    Alteration = 1
+	PARTITION   Alteration = 2
+	UNPARTITION Alteration = 3
+	RESTART     Alteration = 4
 )
 
-func (alt alteration) String() string {
+func (alt Alteration) String() string {
 	switch alt {
 	case SHUTDOWN:
 		return "SHUTDOWN"
@@ -1577,18 +1577,18 @@ func (alt alteration) String() string {
 	case RESTART:
 		return "RESTART"
 	}
-	panic(fmt.Sprintf("unknown alteration %v", int(alt)))
-	return "unknown alteration"
+	panic(fmt.Sprintf("unknown Alteration %v", int(alt)))
+	return "unknown Alteration"
 }
 
 type nodeAlteration struct {
 	simnet  *simnet
 	simnode *simnode
-	alter   alteration
+	alter   Alteration
 	done    chan struct{}
 }
 
-func (s *simnet) newNodeAlteration(node *simnode, alter alteration) *nodeAlteration {
+func (s *simnet) newNodeAlteration(node *simnode, alter Alteration) *nodeAlteration {
 	return &nodeAlteration{
 		simnet:  s,
 		simnode: node,
@@ -1596,7 +1596,7 @@ func (s *simnet) newNodeAlteration(node *simnode, alter alteration) *nodeAlterat
 		done:    make(chan struct{}),
 	}
 }
-func (s *simnet) alterNode(node *simnode, alter alteration) {
+func (s *simnet) alterNode(node *simnode, alter Alteration) {
 
 	alt := s.newNodeAlteration(node, alter)
 	select {

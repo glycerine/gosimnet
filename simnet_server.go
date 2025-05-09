@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 	"sync"
-	//"sync/atomic"
+	"sync/atomic"
 	"time"
 
 	"github.com/glycerine/idem"
@@ -176,7 +176,7 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 		return
 	}
 
-	msg := NewMessage()
+	msg := newMessage()
 	n = len(p)
 	if n > UserMaxPayload {
 		n = UserMaxPayload
@@ -426,4 +426,20 @@ func (s *simconnError) Timeout() bool {
 }
 func (s *simconnError) Temporary() bool {
 	return s.isTimeout
+}
+
+type message struct {
+	Serial  int64  `zid:"0"`
+	JobSerz []byte `zid:"1"`
+}
+
+func (m *message) CopyForSimNetSend() (c *message) {
+	return &message{
+		Serial:  atomic.AddInt64(&lastSerialPrivate, 1),
+		JobSerz: append([]byte{}, m.JobSerz...),
+	}
+}
+
+func newMessage() *message {
+	return &message{}
 }

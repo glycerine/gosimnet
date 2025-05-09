@@ -1,61 +1,16 @@
 package gosimnet
 
 import (
-	//"fmt"
-	"net"
-	"time"
+//"fmt"
+//"net"
+//"time"
 )
-
-func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
-
-	//vv("Client.Dial called with local='%v', server='%v'", c.name, address)
-
-	err = c.runSimNetClient(c.name, address)
-
-	select {
-	case <-c.connected:
-		nc = c.simconn
-		return
-	case <-c.halt.ReqStop.Chan:
-		err = ErrShutdown
-		return
-	}
-	return
-}
-
-func (s *Client) Close() error {
-	//vv("Client.Close running")
-
-	if s.simnode == nil {
-		return nil // not an error to Close before we started.
-	}
-	s.simnet.alterNode(s.simnode, SHUTDOWN)
-	s.halt.ReqStop.Close()
-	return nil
-}
 
 func (s *Client) setLocalAddr(conn localRemoteAddr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
 	s.cfg.localAddress = local(conn)
-}
-
-// LocalAddr retreives the local host/port that the
-// Client is calling from.
-func (c *Client) LocalAddr() string {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-	return c.cfg.localAddress
-}
-
-// RemoteAddr retreives the remote host/port for
-// the Server that the Client is connected to.
-func (c *Client) RemoteAddr() string {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-
-	return remote(c.conn)
 }
 
 func remote(nc localRemoteAddr) string {
@@ -128,47 +83,6 @@ func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
 	case <-c.halt.ReqStop.Chan:
 		return ErrShutdown
 	}
-	return
-}
-
-func (c *Client) NewTimer(dur time.Duration) (ti *Timer) {
-	ti = &Timer{
-		isCli: true,
-	}
-	ti.simnet = c.simnet
-	ti.simnode = c.simnode
-	ti.simtimer = c.simnet.createNewTimer(c.simnode, dur, time.Now(), true) // isCli
-	ti.C = ti.simtimer.timerC
-	return
-}
-
-type Timer struct {
-	gotimer  *time.Timer
-	isCli    bool
-	simnode  *simnode
-	simnet   *simnet
-	simtimer *mop
-	C        <-chan time.Time
-}
-
-func (s *Server) NewTimer(dur time.Duration) (ti *Timer) {
-	ti = &Timer{
-		isCli: false,
-	}
-	ti.simnet = s.simnet
-	ti.simnode = s.simnode
-	ti.simtimer = s.simnet.createNewTimer(s.simnode, dur, time.Now(), false) // isCli
-	ti.C = ti.simtimer.timerC
-	return
-}
-
-func (ti *Timer) Discard() (wasArmed bool) {
-	if ti.simnet == nil {
-		ti.gotimer.Stop()
-		ti.gotimer = nil // Go will GC.
-		return
-	}
-	wasArmed = ti.simnet.discardTimer(ti.simnode, ti.simtimer, time.Now())
 	return
 }
 
