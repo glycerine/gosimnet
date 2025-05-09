@@ -14,7 +14,7 @@ system testing (simulating network chaos), without
 a net.Conn interface. Then I realized it might 
 be more broadly useful. So I pulled it out and condensed it, adding
 a net.Conn interface, to make it potentially
-usable for broader https://pkg.go.dev/testing/synctest testing.
+usable for wider https://pkg.go.dev/testing/synctest testing.
 
 Since synctest is in the experimental phase, 
 getting early feedback in now to make it as
