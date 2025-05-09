@@ -1,8 +1,10 @@
 gosimnet
 ========
 
-`gosimnet` is a simulated network for testing with 
-testing/synctest. gosimnet implements the `net.Conn`
+`gosimnet` is a compact network simulator. It is fairly minimal,
+but still hopefully useful. It was written for testing with 
+testing/synctest (which is very promising/exciting), but
+can run without it too. gosimnet implements the `net.Conn`
 interface to networks. The test file
 https://github.com/glycerine/gosimnet/blob/master/simnet_test.go
 illustrates its use.
