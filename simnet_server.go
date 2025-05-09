@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"sync"
 	//"sync/atomic"
 	"time"
@@ -11,29 +12,77 @@ import (
 	"github.com/glycerine/idem"
 )
 
-func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *SimNetConfig) {
-	vv("top of runSimnetServer, serverAddr = '%v'; name='%v'", serverAddr, s.name)
-	defer func() {
-		r := recover()
-		//vv("defer running, end of runSimNetServer() for '%v' r='%v'", s.name, r)
-		s.halt.ReqStop.Close()
-		s.halt.Done.Close()
-		//vv("exiting Server.runSimNetServer('%v')", serverAddr) // seen, yes, on shutdown test.
-		if r != nil {
-			panic(r)
+// Server implements net.Listener
+
+// Accept waits for and returns the next connection to the listener.
+func (s *Server) Accept() (nc net.Conn, err error) {
+	select {
+	case nc = <-s.simnode.tellServerNewConnCh:
+		if IsNil(nc) {
+			err = ErrShutdown
+			return
 		}
-	}()
+		//vv("Server.Accept returning nc = '%#v'", nc.(*simnetConn))
+	case <-s.halt.ReqStop.Chan:
+		err = ErrShutdown
+	}
+	return
+}
+
+func (s *Server) Addr() (a net.Addr) {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	return s.netAddr
+}
+
+func (s *Server) Listen() (netAddr *SimNetAddr, err error) {
+	// start the server, first server boots the network,
+	// but it can continue even if the server is shutdown.
+	addrCh := make(chan *SimNetAddr, 1)
+	s.runSimNetServer(s.name, addrCh, nil)
+
+	select {
+	case netAddr = <-addrCh:
+	case <-s.halt.ReqStop.Chan:
+		err = ErrShutdown
+	}
+	return
+}
+
+// Any blocked Accept operations will be unblocked and return errors.
+func (s *Server) Close() error {
+	//vv("Server.Close() running")
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	if s.simnode == nil {
+		return nil // not an error to Close before we started.
+	}
+	s.simnet.alterNode(s.simnode, SHUTDOWN)
+	//vv("simnet.alterNode(s.simnode, SHUTDOWN) done for %v", s.name)
+	s.halt.ReqStop.Close()
+	// nobody else we need ack from, so don't hang on:
+	//<-s.halt.Done.Chan
+	return nil
+}
+
+func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, simNetConfig *SimNetConfig) {
 
 	// satisfy uConn interface; don't crash cli/tests that check
-	netAddr := &SimNetAddr{network: "simnet", addr: serverAddr, name: s.name, isCli: false}
+	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}
 
 	// idempotent, so all new servers can try;
 	// only the first will boot it up (still pass s for s.halt);
-	// second and subsequent will get back the cfg.simnetRendezvous.singleSimnet
+	// second and subsequent will get back the
+	// cfg.simnetRendezvous.singleSimnet, which is a
 	// per config shared simnet.
 	simnet := s.cfg.bootSimNetOnServer(simNetConfig, s)
 
-	// sets s.simnode, s.simnet
+	//deadlock? yes. arg. simnet.halt.AddChild(s.halt)
+	s.cfg.mut.Lock()
+	s.cfg.simnetRendezvous.singleSimnet = simnet
+	s.cfg.mut.Unlock()
+
+	// sets s.simnode, s.simnet as side-effect
 	serverNewConnCh, err := simnet.registerServer(s, netAddr)
 	if err != nil {
 		if err == ErrShutdown {
@@ -45,42 +94,19 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNe
 	if serverNewConnCh == nil {
 		panic(fmt.Sprintf("%v got a nil serverNewConnCh, should not be allowed!", s.name))
 	}
-
-	defer func() {
-		simnet.alterNode(s.simnode, SHUTDOWN)
-		//vv("simnet.alterNode(s.simnode, SHUTDOWN) done for %v", s.name)
-	}()
+	// we don't need to otherwise save serverNewConnCh, since
+	// s.simnode.tellServerNewConnCh already has it.
 
 	s.mut.Lock() // avoid data races
 	addrs := netAddr.Network() + "://" + netAddr.String()
 	s.boundAddressString = addrs
+	s.netAddr = netAddr
 	s.mut.Unlock()
 
 	if boundCh != nil {
 		select {
 		case boundCh <- netAddr:
-			// like the srv comment, this exception to
-			// using the simnet TimeAfter is fine,
-			// as obvious it gets created just below and
-			// the server is not up yet.
 		case <-time.After(100 * time.Millisecond):
-		}
-	}
-
-	for {
-		select { // wait for a new client to connect
-		case conn := <-serverNewConnCh:
-			_ = conn
-			//s.simnode = conn.local
-
-			//vv("%v simnet server got new conn '%#v', about to start read/send loops", netAddr, conn) // not seen
-			panic("TODO implement")
-			//pair := s.newRWPair(conn)
-			//go pair.runSendLoop(conn)
-			//go pair.runReadLoop(conn)
-
-		case <-s.halt.ReqStop.Chan:
-			return
 		}
 	}
 }
@@ -91,6 +117,8 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNe
 // the other net.Conn generic Read/Write less so, at the moment.
 type simnetConn struct {
 	mut sync.Mutex
+
+	owner *simnode
 
 	// distinguish cli from srv
 	isCli   bool
@@ -106,8 +134,15 @@ type simnetConn struct {
 	nextRead []byte
 
 	// no more reads, but serve the rest of nextRead.
-	isClosed bool
-	closed   *idem.IdemCloseChan
+	localClosed  *idem.IdemCloseChan
+	remoteClosed *idem.IdemCloseChan
+}
+
+func newSimnetConn() *simnetConn {
+	return &simnetConn{
+		localClosed:  idem.NewIdemCloseChan(),
+		remoteClosed: idem.NewIdemCloseChan(),
+	}
 }
 
 // originally not actually used much by simnet. We'll
@@ -128,7 +163,9 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
-	if s.isClosed {
+	isCli := s.isCli
+
+	if s.localClosed.IsClosed() {
 		err = &simconnError{
 			desc: "use of closed network connection",
 		}
@@ -139,7 +176,6 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 		return
 	}
 
-	isCli := s.isCli
 	msg := NewMessage()
 	n = len(p)
 	if n > UserMaxPayload {
@@ -150,27 +186,42 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 		msg.JobSerz = append([]byte{}, p...)
 	}
 
-	//vv("top simnet.sendMessage() %v SEND  msg.Serial=%v", send.origin, msg.HDR.Serial)
-	//vv("sendMessage\n conn.local = %v (isCli:%v)\n conn.remote = %v (isCli:%v)\n", s.local.name, s.local.isCli, s.remote.name, s.remote.isCli)
+	var sendDead chan time.Time
+	if s.sendDeadlineTimer != nil {
+		sendDead = s.sendDeadlineTimer.timerC
+	}
+
 	send := newSendMop(msg, isCli)
 	send.origin = s.local
+	send.fileLine = fileLine(3)
 	send.target = s.remote
 	send.initTm = time.Now()
+
+	//vv("top simnet.Write(%v) from %v at %v to %v", string(msg.JobSerz), send.origin.name, send.fileLine, send.target.name)
+
 	select {
 	case s.net.msgSendCh <- send:
 	case <-s.net.halt.ReqStop.Chan:
 		n = 0
 		err = ErrShutdown
 		return
-	case timeout := <-s.sendDeadlineTimer.timerC:
+	case timeout := <-sendDead:
 		_ = timeout
 		n = 0
 		err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
-	case <-s.closed.Chan:
+	case <-s.localClosed.Chan:
+		n = 0
+		err = io.EOF
+		return
+	case <-s.remoteClosed.Chan:
+		n = 0
 		err = io.EOF
 		return
 	}
+
+	//vv("net has it, about to wait for proceed... simnetConn.Write('%v') isCli=%v, origin=%v ; target=%v;", string(send.msg.JobSerz), s.isCli, send.origin.name, send.target.name)
+
 	select {
 	case <-send.proceed:
 		return
@@ -178,12 +229,16 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 		n = 0
 		err = ErrShutdown
 		return
-	case timeout := <-s.sendDeadlineTimer.timerC:
+	case timeout := <-sendDead:
 		_ = timeout
 		n = 0
 		err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
-	case <-s.closed.Chan:
+	case <-s.localClosed.Chan:
+		n = 0
+		err = io.EOF
+		return
+	case <-s.remoteClosed.Chan:
 		n = 0
 		err = io.EOF
 		return
@@ -232,29 +287,40 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 		return
 	}
 
-	if s.isClosed {
+	if s.localClosed.IsClosed() {
 		err = io.EOF
 		return
 	}
 
 	isCli := s.isCli
 
-	//vv("top simnet.readMessage() %v READ", read.origin)
+	var readDead chan time.Time
+	if s.readDeadlineTimer != nil {
+		readDead = s.readDeadlineTimer.timerC
+	}
 
 	read := newReadMop(isCli)
 	read.initTm = time.Now()
 	read.origin = s.local
+	read.fileLine = fileLine(2)
 	read.target = s.remote
+
+	//vv("in simnetConn.Read() isCli=%v, origin=%v at %v; target=%v", s.isCli, read.origin.name, read.fileLine, read.target.name)
+
 	select {
 	case s.net.msgReadCh <- read:
 	case <-s.net.halt.ReqStop.Chan:
 		err = ErrShutdown
 		return
-	case timeout := <-s.readDeadlineTimer.timerC:
+	case timeout := <-readDead:
 		_ = timeout
-		err = &simconnError{isTimeout: true, desc: "i/o timeout"}
+		err = os.ErrDeadlineExceeded
+		//err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
-	case <-s.closed.Chan:
+	case <-s.localClosed.Chan:
+		err = io.EOF
+		return
+	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return
 	}
@@ -269,11 +335,15 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	case <-s.net.halt.ReqStop.Chan:
 		err = ErrShutdown
 		return
-	case timeout := <-s.readDeadlineTimer.timerC:
+	case timeout := <-readDead:
 		_ = timeout
-		err = &simconnError{isTimeout: true, desc: "i/o timeout"}
+		err = os.ErrDeadlineExceeded
+		//err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
-	case <-s.closed.Chan:
+	case <-s.localClosed.Chan:
+		err = io.EOF
+		return
+	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return
 	}
@@ -281,11 +351,8 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 }
 
 func (s *simnetConn) Close() error {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-
-	s.isClosed = true
-	s.closed.Close() // unblock sends/reads
+	// only close local, might still be bytes to read on other end.
+	s.localClosed.Close()
 	return nil
 }
 
@@ -359,37 +426,4 @@ func (s *simconnError) Timeout() bool {
 }
 func (s *simconnError) Temporary() bool {
 	return s.isTimeout
-}
-
-func (s *simnet) Dial(localHostPort, serverAddr string) *simnetConn {
-
-	// so something like
-	// runSimNetClient(localHostPort, serverAddr string)
-	// in simnet_client.go
-
-	//
-	// currently the simnet.go:413 :433 methods
-	//
-	// addEdgeFromSrv(srvnode, clinode *simnode) *simnetConn
-	// and
-	// addEdgeFromCli(clinode, srvnode *simnode) *simnetConn
-	//
-	// are how we make new simnetConn; but they are
-	// internal not external.
-	// We'll wait until we have actual client code to figure
-	// out what is actually required.
-	panic("TODO Dial for clients")
-	return nil
-}
-
-func (s *simnet) Listen() *simnetConn {
-	// see comments in Dial above. wait for actual client code.
-
-	// s.bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet
-	// will be needed.
-	// then a more standalone version of the simnet.go:1540  code
-	// s.registerServer(srv *Server, srvNetAddr *SimNetAddr) (newCliConnCh chan *simnetConn, err error)
-
-	panic("TODO Listen for servers")
-	return nil
 }

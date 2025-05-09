@@ -1,14 +1,14 @@
 package gosimnet
 
+// To use testing/synctest, need go1.24.2 and
 // build/run with:
 // GOTRACEBACK=all GOEXPERIMENT=synctest go test -v
 
 import (
 	"fmt"
 	mathrand2 "math/rand/v2"
-	//"sync"
+	"net"
 	"sync/atomic"
-	//"testing/synctest" // moved to simnet_synctest.go
 	"time"
 
 	"github.com/glycerine/idem"
@@ -84,9 +84,9 @@ type mop struct {
 	readerLC int64
 	originLC int64
 
-	timerC        chan time.Time
-	timerDur      time.Duration
-	timerFileLine string // where was this timer from?
+	timerC   chan time.Time
+	timerDur time.Duration
+	fileLine string // where was this timer from?
 
 	// discards tell us the corresponding create timer here.
 	origTimerMop        *mop
@@ -132,7 +132,7 @@ type mop struct {
 func (op *mop) String() string {
 	var msgSerial int64
 	if op.msg != nil {
-		msgSerial = op.msg.HDR.Serial
+		msgSerial = op.msg.Serial
 	}
 	who := "SERVER"
 	if op.originCli {
@@ -158,9 +158,9 @@ func (op *mop) String() string {
 	extra := ""
 	switch op.kind {
 	case TIMER:
-		extra = " timer set at " + op.timerFileLine
+		extra = " timer set at " + op.fileLine
 	case TIMER_DISCARD:
-		extra = " timer discarded at " + op.timerFileLine
+		extra = " timer discarded at " + op.fileLine
 	case SEND:
 		extra = fmt.Sprintf(" FROM %v TO %v", op.origin.name, op.target.name)
 	}
@@ -173,7 +173,7 @@ type simnet struct {
 
 	scenario *scenario
 
-	cfg       *Config
+	cfg       *Net
 	simNetCfg *SimNetConfig
 
 	srv *Server
@@ -190,8 +190,6 @@ type simnet struct {
 
 	alterNodeCh chan *nodeAlteration
 
-	// same as srv.halt; we don't need
-	// our own, at least for now.
 	halt *idem.Halter
 
 	msgSendCh      chan *mop
@@ -250,7 +248,10 @@ func (s *simnet) newSimnode(name string) *simnode {
 		net:     s,
 	}
 }
-
+func (s *simnet) Close() error {
+	s.halt.ReqStop.CloseWithReason(ErrShutdown)
+	return nil
+}
 func (s *simnet) newSimnodeClient(name string) (node *simnode) {
 	node = s.newSimnode(name)
 	node.isCli = true
@@ -275,13 +276,6 @@ func (s *simnet) showDNS() {
 
 // for additional servers after the first.
 func (s *simnet) handleServerRegistration(reg *serverRegistration) {
-
-	// srvNetAddr := SimNetAddr{ // implements net.Addr interface
-	// 	network: "simnet",
-	// 	addr:
-	// 	name:    reg.server.name,
-	// 	isCli:   false,
-	// }
 
 	srvnode := s.newSimnodeServer(reg.server.name)
 	srvnode.netAddr = reg.srvNetAddr
@@ -322,11 +316,12 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 	reg.simnode = clinode
 
 	// tell server about new edge
-	// vv("about to deadlock? stack=\n'%v'", stack())
-	// I think this might be a chicken and egg problem.
+
+	// The chicken and egg problem:
 	// The server cannot register b/c client is here on
 	// the scheduler goro, and client here wants to tell the
-	// the server about it... try in goro
+	// the server about it... better issue this
+	// a temporary background goroutine.
 	go func() {
 		select {
 		case srvnode.tellServerNewConnCh <- s2c:
@@ -341,7 +336,8 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 }
 
 // idempotent, all servers do this, then register through the same path.
-func (cfg *Config) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet { // (tellServerNewConnCh chan *simnetConn) {
+// This is fine, and expected.
+func (cfg *Net) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet {
 
 	//vv("%v newSimNetOnServer top, goro = %v", srv.name, GoroNumber())
 	cfg.simnetRendezvous.singleSimnetMut.Lock()
@@ -355,8 +351,6 @@ func (cfg *Config) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *
 
 	tick := time.Millisecond
 	minHop := time.Millisecond * 10
-	//tick := time.Second
-	//minHop := time.Second * 5
 	maxHop := minHop
 	var seed [32]byte
 	scen := newScenario(tick, minHop, maxHop, seed)
@@ -395,7 +389,7 @@ func (cfg *Config) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *
 	s.nextTimer.Stop()
 
 	cfg.simnetRendezvous.singleSimnet = s
-	//vv("newSimNetOnServer: assigned to singleSimnet, releasing lock by  goro = %v", GoroNumber())
+	//vv("newSimNetOnServer: assigned to singleSimnet goro = %v", GoroNumber())
 	s.Start()
 
 	return s
@@ -417,14 +411,13 @@ func (s *simnet) addEdgeFromSrv(srvnode, clinode *simnode) *simnetConn {
 		srv = make(map[*simnode]*simnetConn)
 		s.nodes[srvnode] = srv
 	}
-	s2c := &simnetConn{
-		isCli:   false,
-		net:     s,
-		local:   srvnode,
-		remote:  clinode,
-		netAddr: srvnode.netAddr,
-		closed:  idem.NewIdemCloseChan(),
-	}
+	s2c := newSimnetConn()
+	s2c.isCli = false
+	s2c.net = s
+	s2c.local = srvnode
+	s2c.remote = clinode
+	s2c.netAddr = srvnode.netAddr
+
 	// replace any previous conn
 	srv[clinode] = s2c
 	return s2c
@@ -437,13 +430,13 @@ func (s *simnet) addEdgeFromCli(clinode, srvnode *simnode) *simnetConn {
 		cli = make(map[*simnode]*simnetConn)
 		s.nodes[clinode] = cli
 	}
-	c2s := &simnetConn{
-		isCli:   true,
-		net:     s,
-		local:   clinode,
-		remote:  srvnode,
-		netAddr: clinode.netAddr,
-	}
+	c2s := newSimnetConn()
+	c2s.isCli = true
+	c2s.net = s
+	c2s.local = clinode
+	c2s.remote = srvnode
+	c2s.netAddr = clinode.netAddr
+
 	// replace any previous conn
 	cli[srvnode] = c2s
 	return c2s
@@ -741,16 +734,16 @@ func newPQcompleteTm(owner string) *pq {
 }
 
 func (s *simnet) shutdownNode(node *simnode) {
-	vv("handleAlterNode: SHUTDOWN %v, going from %v -> HALTED", node.state, node.name)
+	//vv("handleAlterNode: SHUTDOWN %v, going from %v -> HALTED", node.state, node.name)
 	node.state = HALTED
 	node.readQ.deleteAll()
 	node.preArrQ.deleteAll()
 	node.timerQ.deleteAll()
-	vv("handleAlterNode: end SHUTDOWN, node is now: %v", node)
+	//vv("handleAlterNode: end SHUTDOWN, node is now: %v", node)
 }
 
 func (s *simnet) restartNode(node *simnode) {
-	vv("handleAlterNode: RESTART %v, wiping queues, going %v -> HEALTHY", node.state, node.name)
+	//vv("handleAlterNode: RESTART %v, wiping queues, going %v -> HEALTHY", node.state, node.name)
 	node.state = HEALTHY
 	node.readQ.deleteAll()
 	node.preArrQ.deleteAll()
@@ -758,12 +751,12 @@ func (s *simnet) restartNode(node *simnode) {
 }
 
 func (s *simnet) partitionNode(node *simnode) {
-	vv("handleAlterNode: from %v -> PARTITION %v, wiping pre-arrival, block any future pre-arrivals", node.state, node.name)
+	//vv("handleAlterNode: from %v -> PARTITION %v, wiping pre-arrival, block any future pre-arrivals", node.state, node.name)
 	node.state = PARTITIONED
 	node.preArrQ.deleteAll()
 }
 func (s *simnet) unPartitionNode(node *simnode) {
-	vv("handleAlterNode: UNPARTITION %v, going from %v -> HEALTHY", node.state, node.name)
+	//vv("handleAlterNode: UNPARTITION %v, going from %v -> HEALTHY", node.state, node.name)
 	node.state = HEALTHY
 }
 
@@ -808,7 +801,7 @@ func (s *simnet) handleSend(send *mop) {
 
 	switch send.target.state {
 	case HALTED, PARTITIONED:
-		vv("send.target.state == %v, dropping msg = '%v'", send.target.state, send.msg)
+		//vv("send.target.state == %v, dropping msg = '%v'", send.target.state, send.msg)
 	case HEALTHY:
 
 		// make a copy _before_ the sendMessage() call returns,
@@ -833,7 +826,7 @@ func (s *simnet) handleSend(send *mop) {
 }
 
 func (s *simnet) handleRead(read *mop) {
-	////zz("top of handleRead(read = '%v')", read)
+	//vv("top of handleRead(read by %v at %v)", read.origin.name, read.fileLine)
 
 	switch read.origin.state {
 	case HALTED:
@@ -1043,7 +1036,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 			pending.timerDur = dur
 			pending.initTm = now
 			pending.completeTm = now.Add(dur)
-			pending.timerFileLine = fileLine(1)
+			pending.fileLine = fileLine(1)
 			pending.internalPendingTimer = true
 			node.net.handleTimer(pending)
 			return
@@ -1067,7 +1060,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 		read.arrivalTm = send.arrivalTm // easier diagnostics
 
 		// matchmaking
-		//vv("[1]matchmaking: \nsend '%v' -> \nread '%v'", send, read)
+		//vv("[1]matchmaking: \nsend '%v' -> \nread '%v'; payload='%v'", send.origin.name, read.origin.name, string(read.msg.JobSerz))
 		read.sendmop = send
 		send.readmop = read
 
@@ -1136,7 +1129,7 @@ func (s *simnet) scheduler() {
 		//vv("scheduler defer shutdown running on goro = %v", GoroNumber())
 		r := recover()
 		if r != nil {
-			vv("scheduler panic-ing: %v", s.schedulerReport())
+			//vv("scheduler panic-ing: %v", s.schedulerReport())
 			panic(r)
 		}
 	}()
@@ -1182,7 +1175,7 @@ func (s *simnet) scheduler() {
 
 		case srvreg := <-s.srvRegisterCh:
 			// "bind/listen" on a socket, server waits for any client to "connect"
-			vv("s.srvRegisterCh got srvreg for '%v' = '%#v'", srvreg.server.name, srvreg)
+			//vv("s.srvRegisterCh got srvreg for '%v' = '%#v'", srvreg.server.name, srvreg)
 			s.handleServerRegistration(srvreg)
 			//vv("back from handleServerRegistration '%v'", srvreg.server.name)
 
@@ -1203,7 +1196,7 @@ func (s *simnet) scheduler() {
 			s.handleSend(send)
 
 		case read := <-s.msgReadCh:
-			////zz("msgReadCh ->  op='%v'", read)
+			//vv("msgReadCh ->  op='%v'", read)
 			s.handleRead(read)
 
 		case alt := <-s.alterNodeCh:
@@ -1216,7 +1209,7 @@ func (s *simnet) scheduler() {
 }
 
 func (s *simnet) finishScenario() {
-	// do any tear down work...
+	// do any teardown work...
 
 	// at the end
 	s.scenario = nil
@@ -1353,7 +1346,7 @@ func (s *simnet) createNewTimer(origin *simnode, dur time.Duration, begin time.T
 	timer.timerDur = dur
 	timer.initTm = begin
 	timer.completeTm = begin.Add(dur)
-	timer.timerFileLine = fileLine(3)
+	timer.fileLine = fileLine(3)
 
 	select {
 	case s.addTimer <- timer:
@@ -1370,7 +1363,7 @@ func (s *simnet) createNewTimer(origin *simnode, dur time.Duration, begin time.T
 }
 
 // readMessage reads a framed message from conn.
-func (s *simnet) readMessage(conn uConn) (msg *Message, err error) {
+func (s *simnet) readMessage(conn net.Conn) (msg *Message, err error) {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1395,7 +1388,7 @@ func (s *simnet) readMessage(conn uConn) (msg *Message, err error) {
 	return
 }
 
-func (s *simnet) sendMessage(conn uConn, msg *Message, timeout *time.Duration) error {
+func (s *simnet) sendMessage(conn net.Conn, msg *Message, timeout *time.Duration) error {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1467,7 +1460,7 @@ func (s *simnet) discardTimer(origin *simnode, origTimerMop *mop, discardTm time
 
 	discard := newTimerDiscardMop(origTimerMop)
 	discard.initTm = time.Now()
-	discard.timerFileLine = fileLine(3)
+	discard.fileLine = fileLine(3)
 	discard.origin = origin
 
 	select {
@@ -1614,7 +1607,7 @@ func (s *simnet) alterNode(node *simnode, alter alteration) {
 	}
 	select {
 	case <-alt.done:
-		vv("server altered: %v", node)
+		//vv("server altered: %v", node)
 	case <-s.halt.ReqStop.Chan:
 		return
 	}
