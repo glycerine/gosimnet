@@ -26,7 +26,7 @@ are pretty solid. They got pretty harsh testing
 over in https://github.com/glycerine/rpc25519 .
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
-to keep this package minimal, but that does
+to keep this package petite and approachable, but that does
 not reflect the true degree of testing that
 has been done. Also I assume that with net.Conn
 now available, almost anything can be made
