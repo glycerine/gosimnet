@@ -23,7 +23,8 @@ func Test101_gosimnet_basics(t *testing.T) {
 		shutdown := make(chan struct{})
 		defer close(shutdown)
 
-		network := NewNet()
+		cfg := NewSimNetConfig()
+		network := NewNet(cfg)
 		defer network.Close()
 		srv := network.NewServer("srv_" + t.Name())
 

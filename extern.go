@@ -108,6 +108,7 @@ type Server struct {
 // which they will use to rendezvous; in
 // addition to their addresses (names).
 type Net struct {
+	cfg              *SimNetConfig
 	mut              sync.Mutex
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
@@ -125,8 +126,9 @@ func (s *Net) Close() error {
 // Clients and Servers from
 // different Net can never see or
 // hear from each other.
-func NewNet() (n *Net) {
+func NewNet(cfg *SimNetConfig) (n *Net) {
 	n = &Net{
+		cfg:              cfg,
 		simnetRendezvous: &simnetRendezvous{},
 	}
 	return
@@ -262,4 +264,15 @@ func (ti *Timer) Discard() (wasArmed bool) {
 	}
 	wasArmed = ti.simnet.discardTimer(ti.simnode, ti.simtimer, time.Now())
 	return
+}
+
+// SimNetConfig allows for future custom
+// settings of the gosimnet.
+type SimNetConfig struct{}
+
+// NewSimNetConfig should be called
+// to get an initial SimNetConfig to
+// set parameters and pass to NewNet().
+func NewSimNetConfig() *SimNetConfig {
+	return &SimNetConfig{}
 }

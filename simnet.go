@@ -15,8 +15,6 @@ import (
 	rb "github.com/glycerine/rbtree"
 )
 
-type SimNetConfig struct{}
-
 // moved to simnet_server.go to implement net.Conn
 // a connection between two nodes.
 // implements uConn, see simnet_server.go
