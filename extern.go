@@ -41,7 +41,7 @@ type localRemoteAddr interface {
 type Client struct {
 	mut     sync.Mutex
 	net     *Net
-	cfg     *SimNetConfig
+	cfg     *NetConfig
 	name    string
 	halt    *idem.Halter
 	simnode *simnode
@@ -56,7 +56,7 @@ type Client struct {
 // NewClient makes a new Client. Its name
 // will double as its network address.
 func (s *Net) NewClient(name string) (cli *Client) {
-	var cfg SimNetConfig
+	var cfg NetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
@@ -76,7 +76,7 @@ func (s *Net) NewClient(name string) (cli *Client) {
 // will double as its network address.
 func (s *Net) NewServer(name string) (srv *Server) {
 
-	var cfg SimNetConfig
+	var cfg NetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
@@ -104,7 +104,7 @@ func (s *Net) NewServer(name string) (srv *Server) {
 // many Clients.
 type Server struct {
 	mut                sync.Mutex
-	cfg                *SimNetConfig
+	cfg                *NetConfig
 	net                *Net
 	name               string
 	halt               *idem.Halter
@@ -121,7 +121,7 @@ type Server struct {
 // which they will use to rendezvous; in
 // addition to their addresses (names).
 type Net struct {
-	cfg              *SimNetConfig
+	cfg              *NetConfig
 	mut              sync.Mutex
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
@@ -139,7 +139,7 @@ func (s *Net) Close() error {
 // Clients and Servers from
 // different Net can never see or
 // hear from each other.
-func NewNet(cfg *SimNetConfig) (n *Net) {
+func NewNet(cfg *NetConfig) (n *Net) {
 	n = &Net{
 		cfg:              cfg,
 		simnetRendezvous: &simnetRendezvous{},
@@ -279,16 +279,16 @@ func (ti *Timer) Discard() (wasArmed bool) {
 	return
 }
 
-// SimNetConfig allows for future custom
+// NetConfig allows for future custom
 // settings of the gosimnet. The
-// NewSimNetConfig function should
+// NewNetConfig function should
 // be used to get an initial instance.
 // Currently there are no settings.
-type SimNetConfig struct{}
+type NetConfig struct{}
 
-// NewSimNetConfig should be called
-// to get an initial SimNetConfig to
+// NewNetConfig should be called
+// to get an initial NetConfig to
 // set parameters and pass to NewNet().
-func NewSimNetConfig() *SimNetConfig {
-	return &SimNetConfig{}
+func NewNetConfig() *NetConfig {
+	return &NetConfig{}
 }
