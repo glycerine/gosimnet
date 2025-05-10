@@ -137,9 +137,9 @@ func allstacks() string {
 	}
 }
 
-// IsNil uses reflect to to return true iff the face
+// isNil uses reflect to to return true iff the face
 // contains a nil pointer, map, array, slice, or channel.
-func IsNil(face interface{}) bool {
+func isNil(face interface{}) bool {
 	if face == nil {
 		return true
 	}
@@ -157,8 +157,8 @@ func thisStack() []byte {
 	return buf
 }
 
-// GoroNumber returns the calling goroutine's number.
-func GoroNumber() int {
+// goroNumber returns the calling goroutine's number.
+func goroNumber() int {
 	buf := make([]byte, 48)
 	nw := runtime.Stack(buf, false) // false => just us, no other goro.
 	buf = buf[:nw]

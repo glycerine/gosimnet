@@ -51,7 +51,18 @@ type SimNetAddr struct { // implements net.Addr interface
 	isCli   bool
 }
 
-// name of the network (for example, "tcp", "udp", "simnet")
+// Network returns the name of the network
+// (for example, "gosimnet", "tcp", "udp").
+// Currently ignored internally in gosimnet, it is only
+// set pro-forma during Dial to provide a drop in
+// replacement for the usual net.Dial() call.
+//
+// Because it is ignored, it might be useful to
+// re-purpose the network setting
+// for test documentation.  For example, one could use it
+// to annotate the layout of the current network
+// under test, or to note precisely which test
+// is being run; by passing t.Name() to Dial().
 func (s *SimNetAddr) Network() string {
 	//vv("SimNetAddr.Network() returning '%v'", s.network)
 	return s.network
@@ -531,7 +542,7 @@ func (pq *pq) String() (r string) {
 	for it := pq.tree.Min(); it != pq.tree.Limit(); it = it.Next() {
 
 		item := it.Item() // interface{}
-		if IsNil(item) {
+		if isNil(item) {
 			panic("do not put nil into the pq")
 		}
 		op := item.(*mop)

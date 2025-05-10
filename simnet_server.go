@@ -18,7 +18,7 @@ import (
 func (s *Server) Accept() (nc net.Conn, err error) {
 	select {
 	case nc = <-s.simnode.tellServerNewConnCh:
-		if IsNil(nc) {
+		if isNil(nc) {
 			err = ErrShutdown
 			return
 		}
@@ -32,7 +32,9 @@ func (s *Server) Accept() (nc net.Conn, err error) {
 func (s *Server) Addr() (a net.Addr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	return s.netAddr
+	// avoid data race
+	cp := *s.netAddr
+	return &cp
 }
 
 func (s *Server) Listen() (netAddr *SimNetAddr, err error) {
@@ -69,6 +71,10 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 
 	// satisfy uConn interface; don't crash cli/tests that check
 	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}
+	// avoid client/server races by giving userland test
+	// a copy of the address rather than the same.
+	cp := *netAddr
+	externalizedNetAddr := &cp
 
 	// idempotent, so all new servers can try;
 	// only the first will boot it up (still pass s for s.halt);
@@ -77,7 +83,6 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 	// per config shared simnet.
 	simnet := s.cfg.bootSimNetOnServer(simNetConfig, s)
 
-	//deadlock? yes. arg. simnet.halt.AddChild(s.halt)
 	s.cfg.mut.Lock()
 	s.cfg.simnetRendezvous.singleSimnet = simnet
 	s.cfg.mut.Unlock()
@@ -105,7 +110,7 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 
 	if boundCh != nil {
 		select {
-		case boundCh <- netAddr:
+		case boundCh <- externalizedNetAddr: // not  netAddr
 		case <-time.After(100 * time.Millisecond):
 		}
 	}

@@ -10,6 +10,7 @@ import (
 	"net"
 	//"os"
 	//"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -34,10 +35,14 @@ func Test101_gosimnet_basics(t *testing.T) {
 		// we need the server's conn2 in order
 		// to break it out of the Read by conn2.Close()
 		// and shutdown all goro cleanly.
-		var conn2 net.Conn
+
+		var conn2mut sync.Mutex
+		var conn2 []net.Conn
 		defer func() {
-			if conn2 != nil {
-				conn2.Close()
+			conn2mut.Lock()
+			defer conn2mut.Unlock()
+			for _, c := range conn2 {
+				c.Close()
 			}
 		}()
 
@@ -50,14 +55,18 @@ func Test101_gosimnet_basics(t *testing.T) {
 					return
 				default:
 				}
-				conn2, err = srv.Accept()
+				c2, err := srv.Accept()
 				if err != nil {
 					vv("server exiting on '%v'", err)
 					return
 				}
-				vv("Accept on conn: local %v <-> %v remote", conn2.LocalAddr(), conn2.RemoteAddr())
+				conn2mut.Lock()
+				conn2 = append(conn2, c2)
+				conn2mut.Unlock()
+
+				vv("Accept on conn: local %v <-> %v remote", c2.LocalAddr(), c2.RemoteAddr())
 				// per-client connection.
-				go func(conn2 net.Conn) {
+				go func(c2 net.Conn) {
 					by := make([]byte, 1000)
 					for {
 						select {
@@ -67,7 +76,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 						default:
 						}
 						vv("server about to read on conn")
-						n, err := conn2.Read(by)
+						n, err := c2.Read(by)
 						if err != nil {
 							vv("server conn exiting on Read error '%v'", err)
 							return
@@ -75,7 +84,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 						by = by[:n]
 						vv("echo server got '%v'", string(by))
 						// must end in \n or client will hang!
-						_, err = fmt.Fprintf(conn2,
+						_, err = fmt.Fprintf(c2,
 							"hi back from echo server, I saw '%v'\n", string(by))
 						if err != nil {
 							vv("server conn exiting on Write error '%v'", err)
@@ -83,7 +92,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 						}
 					} // end for
 
-				}(conn2)
+				}(c2)
 			} // end for
 		}() // end server
 
