@@ -29,7 +29,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		srv := network.NewServer("srv_" + t.Name())
 
 		vv("about to srv.Listen() in %v", t.Name())
-		lsn, err := srv.Listen()
+		lsn, err := srv.Listen("", "")
 		panicOn(err)
 		defer srv.Close()
 		serverAddr := lsn.Addr()

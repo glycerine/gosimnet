@@ -15,6 +15,7 @@ import (
 // Server implements net.Listener
 
 // Accept waits for and returns the next connection.
+// It is a part
 // Currently there is no separate Listener object;
 // the Server itself plays this role, and
 // implements the net.Listener interface.
@@ -32,6 +33,9 @@ func (s *Server) Accept() (nc net.Conn, err error) {
 	return
 }
 
+// Addr is a method on the net.Listener interface
+// for obtaining the Server's locally bound
+// address.
 func (s *Server) Addr() (a net.Addr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
@@ -40,8 +44,9 @@ func (s *Server) Addr() (a net.Addr) {
 	return &cp
 }
 
-// func (s *Server) Listen() (netAddr *SimNetAddr, err error) {
-func (s *Server) Listen() (lsn net.Listener, err error) {
+// Listen currently ignores the network and addr strings,
+// which are there to match the net.Listen method.
+func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
 	addrCh := make(chan *SimNetAddr, 1)
