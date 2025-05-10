@@ -29,9 +29,10 @@ func Test101_gosimnet_basics(t *testing.T) {
 		srv := network.NewServer("srv_" + t.Name())
 
 		vv("about to srv.Listen() in %v", t.Name())
-		serverAddr, err := srv.Listen()
+		lsn, err := srv.Listen()
 		panicOn(err)
 		defer srv.Close()
+		serverAddr := lsn.Addr()
 
 		// we need the server's conn2 in order
 		// to break it out of the Read by conn2.Close()
@@ -58,7 +59,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 					return
 				default:
 				}
-				c2, err := srv.Accept()
+				c2, err := lsn.Accept()
 				if err != nil {
 					vv("server exiting on '%v'", err)
 					return

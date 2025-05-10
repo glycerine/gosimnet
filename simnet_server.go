@@ -14,7 +14,10 @@ import (
 
 // Server implements net.Listener
 
-// Accept waits for and returns the next connection to the listener.
+// Accept waits for and returns the next connection.
+// Currently there is no separate Listener object;
+// the Server itself plays this role, and
+// implements the net.Listener interface.
 func (s *Server) Accept() (nc net.Conn, err error) {
 	select {
 	case nc = <-s.simnode.tellServerNewConnCh:
@@ -37,17 +40,20 @@ func (s *Server) Addr() (a net.Addr) {
 	return &cp
 }
 
-func (s *Server) Listen() (netAddr *SimNetAddr, err error) {
+// func (s *Server) Listen() (netAddr *SimNetAddr, err error) {
+func (s *Server) Listen() (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
 	addrCh := make(chan *SimNetAddr, 1)
 	s.runSimNetServer(s.name, addrCh, nil)
-
+	lsn = s
+	var netAddr *SimNetAddr
 	select {
 	case netAddr = <-addrCh:
 	case <-s.halt.ReqStop.Chan:
 		err = ErrShutdown
 	}
+	_ = netAddr
 	return
 }
 
