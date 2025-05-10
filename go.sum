@@ -1,4 +1,6 @@
 github.com/glycerine/idem v0.9.6 h1:UT/NeBfEi+aVsw1dAXafTgA0yfovHnRJ3PbTnpxsdKI=
 github.com/glycerine/idem v0.9.6/go.mod h1:vFYNiwmmva2CEglryb5rMQdTqEGOSkpBMNl9z4JDneo=
+github.com/glycerine/idem v0.10.2 h1:GYDf0iEM6j6WWVf2MuNQJksnsEIQ9jZpIMVErc6lP30=
+github.com/glycerine/idem v0.10.2/go.mod h1:vFYNiwmmva2CEglryb5rMQdTqEGOSkpBMNl9z4JDneo=
 github.com/glycerine/rbtree v0.2.1 h1:9nD5PDojW8gu1slYBzzH7VND9gbSjB86tusW5YRKghc=
 github.com/glycerine/rbtree v0.2.1/go.mod h1:skpUtSrm1HHyLo+HayukOvAmXtE/F6tsVW0uCpaBGWE=
