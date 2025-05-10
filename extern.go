@@ -104,7 +104,7 @@ type Server struct {
 
 // Net holds a single gosimnet network.
 // Clients and Servers who want to talk must
-// be provided the same instance of Net,
+// be created from the same instance of Net,
 // which they will use to rendezvous; in
 // addition to their addresses (names).
 type Net struct {
