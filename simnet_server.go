@@ -12,7 +12,7 @@ import (
 	"github.com/glycerine/idem"
 )
 
-// Server implements net.Listener
+var _ net.Listener = &Server{}
 
 // Accept waits for and returns the next connection.
 // It is a part
@@ -46,6 +46,7 @@ func (s *Server) Addr() (a net.Addr) {
 
 // Listen currently ignores the network and addr strings,
 // which are there to match the net.Listen method.
+// The addr will be the name set on NewServer(name).
 func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
