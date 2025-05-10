@@ -1,9 +1,9 @@
 package gosimnet
 
 import (
-//"fmt"
-//"net"
-//"time"
+// "fmt"
+// "net"
+// "time"
 )
 
 func (s *Client) setLocalAddr(conn localRemoteAddr) {
@@ -47,7 +47,7 @@ func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
 	// ignore serverAddr in favor of cfg.ClientDialToHostPort
 	// which tests actually set.
 
-	if c.cfg.ClientDialToHostPort == "" && serverAddr == "" {
+	if serverAddr == "" { // && c.cfg.ClientDialToHostPort == ""
 		panic("gotta have a server address of some kind")
 	}
 	// c.cfg.ClientDialToHostPort vestigial?

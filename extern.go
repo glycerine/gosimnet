@@ -112,7 +112,7 @@ type Net struct {
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
 
-	ClientDialToHostPort string
+	//ClientDialToHostPort string
 }
 
 // Close shuts down the gosimnet network.
