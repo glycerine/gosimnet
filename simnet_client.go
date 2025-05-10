@@ -10,7 +10,7 @@ func (s *Client) setLocalAddr(conn localRemoteAddr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
-	s.cfg.localAddress = local(conn)
+	s.net.localAddress = local(conn)
 }
 
 func remote(nc localRemoteAddr) string {
@@ -34,9 +34,9 @@ func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
 	// how does client pass this to us?/if we need it at all?
 	//simNetConfig := &SimNetConfig{}
 
-	c.cfg.simnetRendezvous.singleSimnetMut.Lock()
-	c.simnet = c.cfg.simnetRendezvous.singleSimnet
-	c.cfg.simnetRendezvous.singleSimnetMut.Unlock()
+	c.net.simnetRendezvous.singleSimnetMut.Lock()
+	c.simnet = c.net.simnetRendezvous.singleSimnet
+	c.net.simnetRendezvous.singleSimnetMut.Unlock()
 
 	if c.simnet == nil {
 		panic("arg. client could not find cfg.simnetRendezvous.singleSimnet")
@@ -47,10 +47,10 @@ func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
 	// ignore serverAddr in favor of cfg.ClientDialToHostPort
 	// which tests actually set.
 
-	if serverAddr == "" { // && c.cfg.ClientDialToHostPort == ""
+	if serverAddr == "" { // && c.net.ClientDialToHostPort == ""
 		panic("gotta have a server address of some kind")
 	}
-	// c.cfg.ClientDialToHostPort vestigial?
+	// c.net.ClientDialToHostPort vestigial?
 	registration := c.simnet.newClientRegistration(c, localHostPort, serverAddr, serverAddr)
 
 	select {

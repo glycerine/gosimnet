@@ -40,7 +40,8 @@ type localRemoteAddr interface {
 // to a single Server.
 type Client struct {
 	mut     sync.Mutex
-	cfg     *Net
+	net     *Net
+	cfg     *SimNetConfig
 	name    string
 	halt    *idem.Halter
 	simnode *simnode
@@ -55,8 +56,13 @@ type Client struct {
 // NewClient makes a new Client. Its name
 // will double as its network address.
 func (s *Net) NewClient(name string) (cli *Client) {
+	var cfg SimNetConfig
+	if s.cfg != nil {
+		cfg = *s.cfg
+	}
 	cli = &Client{
-		cfg:       s,
+		net:       s,
+		cfg:       &cfg,
 		name:      name,
 		simnet:    s.simnetRendezvous.singleSimnet,
 		halt:      idem.NewHalter(),
@@ -69,8 +75,14 @@ func (s *Net) NewClient(name string) (cli *Client) {
 // NewClient makes a new Server. Its name
 // will double as its network address.
 func (s *Net) NewServer(name string) (srv *Server) {
+
+	var cfg SimNetConfig
+	if s.cfg != nil {
+		cfg = *s.cfg
+	}
 	srv = &Server{
-		cfg:     s,
+		net:     s,
+		cfg:     &cfg,
 		name:    name,
 		halt:    idem.NewHalter(),
 		boundCh: make(chan net.Addr, 1),
@@ -92,7 +104,8 @@ func (s *Net) NewServer(name string) (srv *Server) {
 // many Clients.
 type Server struct {
 	mut                sync.Mutex
-	cfg                *Net
+	cfg                *SimNetConfig
+	net                *Net
 	name               string
 	halt               *idem.Halter
 	simnode            *simnode
@@ -193,7 +206,7 @@ func (s *Client) Close() error {
 func (c *Client) LocalAddr() string {
 	c.mut.Lock()
 	defer c.mut.Unlock()
-	return c.cfg.localAddress
+	return c.net.localAddress
 }
 
 // RemoteAddr retreives the remote address for
@@ -267,7 +280,10 @@ func (ti *Timer) Discard() (wasArmed bool) {
 }
 
 // SimNetConfig allows for future custom
-// settings of the gosimnet.
+// settings of the gosimnet. The
+// NewSimNetConfig function should
+// be used to get an initial instance.
+// Currently there are no settings.
 type SimNetConfig struct{}
 
 // NewSimNetConfig should be called

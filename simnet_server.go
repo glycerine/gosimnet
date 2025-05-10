@@ -81,11 +81,11 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 	// second and subsequent will get back the
 	// cfg.simnetRendezvous.singleSimnet, which is a
 	// per config shared simnet.
-	simnet := s.cfg.bootSimNetOnServer(simNetConfig, s)
+	simnet := s.net.bootSimNetOnServer(simNetConfig, s)
 
-	s.cfg.mut.Lock()
-	s.cfg.simnetRendezvous.singleSimnet = simnet
-	s.cfg.mut.Unlock()
+	s.net.mut.Lock()
+	s.net.simnetRendezvous.singleSimnet = simnet
+	s.net.mut.Unlock()
 
 	// sets s.simnode, s.simnet as side-effect
 	serverNewConnCh, err := simnet.registerServer(s, netAddr)
