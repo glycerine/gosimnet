@@ -38,9 +38,11 @@ func Test101_gosimnet_basics(t *testing.T) {
 
 		var conn2mut sync.Mutex
 		var conn2 []net.Conn
+		var done bool
 		defer func() {
 			conn2mut.Lock()
 			defer conn2mut.Unlock()
+			done = true
 			for _, c := range conn2 {
 				c.Close()
 			}
@@ -61,6 +63,10 @@ func Test101_gosimnet_basics(t *testing.T) {
 					return
 				}
 				conn2mut.Lock()
+				if done {
+					conn2mut.Unlock()
+					return
+				}
 				conn2 = append(conn2, c2)
 				conn2mut.Unlock()
 
