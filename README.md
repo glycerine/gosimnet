@@ -1,5 +1,5 @@
 ![image](https://github.com/user-attachments/assets/d671bf05-5688-4f46-b685-63beb29826ab)
-
+image: a simulacra of a gopher happily toying with traffic.
 
 gosimnet
 ========
