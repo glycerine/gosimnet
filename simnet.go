@@ -1568,6 +1568,9 @@ func (s *simnet) registerServer(srv *Server, srvNetAddr *SimNetAddr) (newCliConn
 	return
 }
 
+// Alteration flags are used in AlterNode() calls
+// to specify what change you want to
+// a specific network node.
 type Alteration int // on clients or servers, any simnode
 
 const (
