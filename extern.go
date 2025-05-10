@@ -206,7 +206,7 @@ func (c *Client) RemoteAddr() string {
 // NewTimer makes a new Timer on the given Client.
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
-// recommended to defer ti.Discard immediately.
+// is recommended to defer ti.Discard immediately.
 func (c *Client) NewTimer(dur time.Duration) (ti *Timer) {
 	ti = &Timer{
 		isCli: true,
@@ -237,7 +237,7 @@ type Timer struct {
 // NewTimer makes a new Timer on the given Server.
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
-// recommended to defer ti.Discard immediately.
+// is recommended to defer ti.Discard immediately.
 func (s *Server) NewTimer(dur time.Duration) (ti *Timer) {
 	ti = &Timer{
 		isCli: false,
