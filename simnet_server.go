@@ -14,11 +14,15 @@ import (
 
 var _ net.Listener = &Server{}
 
-// Accept waits for and returns the next connection.
-// It is a part
-// Currently there is no separate Listener object;
-// the Server itself plays this role, and
-// implements the net.Listener interface.
+// Accept is part of the net.Listener interface.
+// Accept waits for and returns the next connection
+// from a Client.
+// You should call Server.Listen() to start the Server
+// before calling Accept() on the Listener
+// interface returned. Currently the Server is also
+// the Listener, but following the net
+// package's use convention allows us flexibility
+// to change this in the future if need be.
 func (s *Server) Accept() (nc net.Conn, err error) {
 	select {
 	case nc = <-s.simnode.tellServerNewConnCh:
