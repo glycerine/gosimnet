@@ -15,34 +15,8 @@ import (
 	rb "github.com/glycerine/rbtree"
 )
 
-// moved to simnet_server.go to implement net.Conn
-// a connection between two nodes.
-// implements uConn, see simnet_server.go
-// type simnetConn struct {
-// 	// distinguish cli from srv
-// 	isCli   bool
-// 	net     *simnet
-// 	netAddr *SimNetAddr // local address
-
-// 	local  *simnode
-// 	remote *simnode
-// }
-
-// simnet implements the same workspace/blabber interface
-// so we can plug in
-// netsim and do comms via channels for testing/synctest
-// based accelerated timeout testing.
-//
-// Note that uConn and its Write/Read are
-// not actually used; channel sends/reads replace them.
-// We still need a dummy uConn to pass to
-// readMessage() and sendMessage() which are the
-// interception points for the simulated network.
-//
-// The blabber does check if the uConn is *simnet, and
-// configures itself to call through it if present.
-
-type SimNetAddr struct { // implements net.Addr interface
+// SimNetAddr implements the net.Addr interface.
+type SimNetAddr struct {
 	network string
 	addr    string
 	name    string
@@ -66,7 +40,7 @@ func (s *SimNetAddr) Network() string {
 	return s.network
 }
 
-// string form of address (for example, "192.0.2.1:25", "[2001:db8::1]:80")
+// String form of address (returns the name of Client/Server).
 func (s *SimNetAddr) String() (str string) {
 	// keep it simple, as it is our simnet.dns lookup key.
 	//str = s.addr + "/" + s.name
@@ -75,7 +49,9 @@ func (s *SimNetAddr) String() (str string) {
 	return
 }
 
-// Message operation
+// mop is a Message operation. It is
+// the internal simnet representation
+// of all events.
 type mop struct {
 	sn int64
 
