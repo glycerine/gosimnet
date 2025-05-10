@@ -67,7 +67,8 @@ func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
 	return
 }
 
-// Any blocked Accept operations will be unblocked and return errors.
+// Close terminates the Server. Any blocked Accept
+// operations will be unblocked and return errors.
 func (s *Server) Close() error {
 	//vv("Server.Close() running")
 	s.mut.Lock()
