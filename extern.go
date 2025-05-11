@@ -35,10 +35,10 @@ type localRemoteAddr interface {
 	LocalAddr() net.Addr
 }
 
-// Client simulates a network
+// SimClient simulates a network
 // client that can Dial out
-// to a single Server.
-type Client struct {
+// to a single SimServer.
+type SimClient struct {
 	mut     sync.Mutex
 	net     *SimNet
 	cfg     *SimNetConfig
@@ -55,12 +55,12 @@ type Client struct {
 
 // NewClient makes a new Client. Its name
 // will double as its network address.
-func (s *SimNet) NewClient(name string) (cli *Client) {
+func (s *SimNet) NewSimClient(name string) (cli *SimClient) {
 	var cfg SimNetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
-	cli = &Client{
+	cli = &SimClient{
 		net:       s,
 		cfg:       &cfg,
 		name:      name,
@@ -72,15 +72,15 @@ func (s *SimNet) NewClient(name string) (cli *Client) {
 	return
 }
 
-// NewClient makes a new Server. Its name
+// NewSimServer makes a new SimServer. Its name
 // will double as its network address.
-func (s *SimNet) NewServer(name string) (srv *Server) {
+func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 
 	var cfg SimNetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
-	srv = &Server{
+	srv = &SimServer{
 		net:     s,
 		cfg:     &cfg,
 		name:    name,
@@ -102,7 +102,7 @@ func (s *SimNet) NewServer(name string) (srv *Server) {
 // Server simulates a server process
 // that can Accept connections from
 // many Clients.
-type Server struct {
+type SimServer struct {
 	mut                sync.Mutex
 	cfg                *SimNetConfig
 	net                *SimNet
@@ -158,7 +158,7 @@ type simnetRendezvous struct {
 // server node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Server) AlterNode(alter Alteration) {
+func (s *SimServer) AlterNode(alter Alteration) {
 	s.simnet.alterNode(s.simnode, alter)
 }
 
@@ -166,12 +166,12 @@ func (s *Server) AlterNode(alter Alteration) {
 // client node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Client) AlterNode(alter Alteration) {
+func (s *SimClient) AlterNode(alter Alteration) {
 	s.simnet.alterNode(s.simnode, alter)
 }
 
 // Dial connects a Client to a Server.
-func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
+func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
 
 	//vv("Client.Dial called with local='%v', server='%v'", c.name, address)
 
@@ -190,7 +190,7 @@ func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
 
 // Close terminates the Client,
 // moving it to SHUTDOWN state.
-func (s *Client) Close() error {
+func (s *SimClient) Close() error {
 	//vv("Client.Close running")
 
 	if s.simnode == nil {
@@ -203,7 +203,7 @@ func (s *Client) Close() error {
 
 // LocalAddr retreives the local address that the
 // Client is calling from.
-func (c *Client) LocalAddr() string {
+func (c *SimClient) LocalAddr() string {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	return c.net.localAddress
@@ -211,7 +211,7 @@ func (c *Client) LocalAddr() string {
 
 // RemoteAddr retreives the remote address for
 // the Server that the Client is connected to.
-func (c *Client) RemoteAddr() string {
+func (c *SimClient) RemoteAddr() string {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 
@@ -222,7 +222,7 @@ func (c *Client) RemoteAddr() string {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (c *Client) NewTimer(dur time.Duration) (ti *Timer) {
+func (c *SimClient) NewTimer(dur time.Duration) (ti *Timer) {
 	ti = &Timer{
 		isCli: true,
 	}
@@ -253,7 +253,7 @@ type Timer struct {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (s *Server) NewTimer(dur time.Duration) (ti *Timer) {
+func (s *SimServer) NewTimer(dur time.Duration) (ti *Timer) {
 	ti = &Timer{
 		isCli: false,
 	}

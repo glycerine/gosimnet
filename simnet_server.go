@@ -12,7 +12,7 @@ import (
 	"github.com/glycerine/idem"
 )
 
-var _ net.Listener = &Server{}
+var _ net.Listener = &SimServer{}
 
 // Accept is part of the net.Listener interface.
 // Accept waits for and returns the next connection
@@ -23,7 +23,7 @@ var _ net.Listener = &Server{}
 // the Listener, but following the net
 // package's use convention allows us flexibility
 // to change this in the future if need be.
-func (s *Server) Accept() (nc net.Conn, err error) {
+func (s *SimServer) Accept() (nc net.Conn, err error) {
 	select {
 	case nc = <-s.simnode.tellServerNewConnCh:
 		if isNil(nc) {
@@ -40,7 +40,7 @@ func (s *Server) Accept() (nc net.Conn, err error) {
 // Addr is a method on the net.Listener interface
 // for obtaining the Server's locally bound
 // address.
-func (s *Server) Addr() (a net.Addr) {
+func (s *SimServer) Addr() (a net.Addr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	// avoid data race
@@ -51,7 +51,7 @@ func (s *Server) Addr() (a net.Addr) {
 // Listen currently ignores the network and addr strings,
 // which are there to match the net.Listen method.
 // The addr will be the name set on NewServer(name).
-func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
+func (s *SimServer) Listen(network, addr string) (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
 	addrCh := make(chan net.Addr, 1)
@@ -70,7 +70,7 @@ func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
 
 // Close terminates the Server. Any blocked Accept
 // operations will be unblocked and return errors.
-func (s *Server) Close() error {
+func (s *SimServer) Close() error {
 	//vv("Server.Close() running")
 	s.mut.Lock()
 	defer s.mut.Unlock()
@@ -85,7 +85,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *SimNetConfig) {
+func (s *SimServer) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *SimNetConfig) {
 
 	// satisfy uConn interface; don't crash cli/tests that check
 	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}

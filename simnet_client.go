@@ -6,7 +6,7 @@ import (
 // "time"
 )
 
-func (s *Client) setLocalAddr(conn localRemoteAddr) {
+func (s *SimClient) setLocalAddr(conn localRemoteAddr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
@@ -23,7 +23,7 @@ func local(nc localRemoteAddr) string {
 	return la.Network() + "://" + la.String()
 }
 
-func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
+func (c *SimClient) runSimNetClient(localHostPort, serverAddr string) (err error) {
 
 	//defer func() {
 	//vv("runSimNetClient defer on exit running client = %p", c)

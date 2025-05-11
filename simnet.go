@@ -168,8 +168,8 @@ type simnet struct {
 	cfg       *SimNet
 	simNetCfg *SimNetConfig
 
-	srv *Server
-	cli *Client
+	srv *SimServer
+	cli *SimClient
 
 	dns map[string]*simnode
 
@@ -329,7 +329,7 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 
 // idempotent, all servers do this, then register through the same path.
 // This is fine, and expected.
-func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet {
+func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *SimServer) *simnet {
 
 	//vv("%v newSimNetOnServer top, goro = %v", srv.name, GoroNumber())
 	cfg.simnetRendezvous.singleSimnetMut.Lock()
@@ -1495,7 +1495,7 @@ func (s *simnet) discardTimer(origin *simnode, origTimerMop *mop, discardTm time
 // See simnet_client.go
 type clientRegistration struct {
 	// provide
-	client           *Client
+	client           *SimClient
 	localHostPortStr string // Client.cfg.ClientHostPort
 
 	dialTo        string // preferred, set by tests; Client.cfg.ClientDialToHostPort
@@ -1511,7 +1511,7 @@ type clientRegistration struct {
 
 // external, called by simnet_client.go to
 // get a registration ticket to send on simnet.cliRegisterCh
-func (s *simnet) newClientRegistration(c *Client, localHostPort, serverAddr, dialTo string) *clientRegistration {
+func (s *simnet) newClientRegistration(c *SimClient, localHostPort, serverAddr, dialTo string) *clientRegistration {
 	return &clientRegistration{
 		client:           c,
 		localHostPortStr: localHostPort,
@@ -1523,7 +1523,7 @@ func (s *simnet) newClientRegistration(c *Client, localHostPort, serverAddr, dia
 
 type serverRegistration struct {
 	// provide
-	server     *Server
+	server     *SimServer
 	srvNetAddr *SimNetAddr
 
 	// wait on
@@ -1536,7 +1536,7 @@ type serverRegistration struct {
 }
 
 // external
-func (s *simnet) newServerRegistration(srv *Server, srvNetAddr *SimNetAddr) *serverRegistration {
+func (s *simnet) newServerRegistration(srv *SimServer, srvNetAddr *SimNetAddr) *serverRegistration {
 	return &serverRegistration{
 		server:     srv,
 		srvNetAddr: srvNetAddr,
@@ -1544,7 +1544,7 @@ func (s *simnet) newServerRegistration(srv *Server, srvNetAddr *SimNetAddr) *ser
 	}
 }
 
-func (s *simnet) registerServer(srv *Server, srvNetAddr *SimNetAddr) (newCliConnCh chan *simnetConn, err error) {
+func (s *simnet) registerServer(srv *SimServer, srvNetAddr *SimNetAddr) (newCliConnCh chan *simnetConn, err error) {
 
 	reg := s.newServerRegistration(srv, srvNetAddr)
 	select {

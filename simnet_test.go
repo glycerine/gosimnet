@@ -27,7 +27,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		cfg := NewSimNetConfig()
 		network := NewSimNet(cfg)
 		defer network.Close()
-		srv := network.NewServer("srv_" + t.Name())
+		srv := network.NewSimServer("srv_" + t.Name())
 
 		//vv("about to srv.Listen() in %v", t.Name())
 		lsn, err := srv.Listen("", "")
@@ -107,7 +107,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 			} // end for
 		}() // end server
 
-		cli := network.NewClient("cli_" + t.Name())
+		cli := network.NewSimClient("cli_" + t.Name())
 		defer cli.Close()
 
 		vv("cli about to Dial")
