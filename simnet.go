@@ -1022,10 +1022,12 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 			pending.timerDur = dur
 			pending.initTm = now
 			pending.completeTm = now.Add(dur)
-			pending.fileLine = fileLine(1)
+			if !node.net.useSynctest {
+				pending.fileLine = fileLine(1) // stalls synctest
+			}
 			pending.internalPendingTimer = true
 			node.net.handleTimer(pending)
-			continue
+			return
 		}
 		// INVAR: this send.arrivalTm <= now; good to deliver.
 
@@ -1128,7 +1130,7 @@ func (s *simnet) scheduler() {
 
 		now := time.Now()
 		_ = now
-		////zz("scheduler top cli.LC = %v ; srv.LC = %v", cliLC, srvLC)
+		vv("scheduler top") //  cli.LC = %v ; srv.LC = %v", cliLC, srvLC)
 		//vv("scheduler top. schedulerReport: \n%v", s.schedulerReport())
 
 		s.dispatchAll()
@@ -1138,11 +1140,12 @@ func (s *simnet) scheduler() {
 		time.Sleep(s.scenario.tick)
 
 		if s.useSynctest && globalUseSynctest {
-			//vv("about to call synctestWait_LetAllOtherGoroFinish")
+			vv("about to call synctestWait_LetAllOtherGoroFinish")
 			synctestWait_LetAllOtherGoroFinish()
 			//vv("back from synctest.Wait() goro = %v", GoroNumber())
 		} else {
 			// advance time by one tick, the non-synctest version.
+			vv("skipped synctest.Wait")
 			time.Sleep(s.scenario.tick)
 		}
 
