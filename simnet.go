@@ -342,6 +342,7 @@ func (cfg *Net) bootSimNetOnServer(simNetConfig *NetConfig, srv *Server) *simnet
 
 	// server creates simnet; must start server first.
 	s := &simnet{
+		useSynctest:    globalUseSynctest,
 		cfg:            cfg,
 		srv:            srv,
 		halt:           srv.halt,
@@ -1096,7 +1097,7 @@ func (s *simnet) tickLogicalClocks() {
 }
 
 func (s *simnet) Start() {
-	//vv("simnet.Start() top")
+	alwaysPrintf("simnet.Start: synctest = %v", s.useSynctest && globalUseSynctest)
 	go s.scheduler()
 }
 

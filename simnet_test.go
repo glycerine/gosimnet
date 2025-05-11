@@ -28,7 +28,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		defer network.Close()
 		srv := network.NewServer("srv_" + t.Name())
 
-		vv("about to srv.Listen() in %v", t.Name())
+		//vv("about to srv.Listen() in %v", t.Name())
 		lsn, err := srv.Listen("", "")
 		panicOn(err)
 		defer srv.Close()
