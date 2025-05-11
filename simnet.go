@@ -1025,7 +1025,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 			pending.fileLine = fileLine(1)
 			pending.internalPendingTimer = true
 			node.net.handleTimer(pending)
-			return
+			continue
 		}
 		// INVAR: this send.arrivalTm <= now; good to deliver.
 
