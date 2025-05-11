@@ -127,6 +127,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		if err != io.EOF {
 			panic(fmt.Sprintf("expected io.EOF, got nr=%v; err = '%v'", nr, err))
 		}
+		vv("good: got EOF as we should, since server closes the conn.")
 
 		// timer test
 		t0 := time.Now()

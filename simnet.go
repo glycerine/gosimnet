@@ -115,6 +115,8 @@ type mop struct {
 	// matches a send, the client proceeds because
 	// this channel will be closed.
 	proceed chan struct{}
+
+	isEOF_RST bool
 }
 
 func (op *mop) String() string {
@@ -150,7 +152,9 @@ func (op *mop) String() string {
 	case TIMER_DISCARD:
 		extra = " timer discarded at " + op.timerFileLine
 	case SEND:
-		extra = fmt.Sprintf(" FROM %v TO %v", op.origin.name, op.target.name)
+		extra = fmt.Sprintf(" FROM %v TO %v (eof:%v)", op.origin.name, op.target.name, op.isEOF_RST)
+	case READ:
+		extra = fmt.Sprintf(" AT %v FROM %v (eof:%v)", op.origin.name, op.target.name, op.isEOF_RST)
 	}
 	return fmt.Sprintf("mop{%v %v init:%v, arr:%v, complete:%v op.sn:%v, msg.sn:%v%v}", who, op.kind, ini, arr, complete, op.sn, msgSerial, extra)
 }
@@ -444,6 +448,10 @@ const (
 	TIMER_DISCARD mopkind = 2
 	SEND          mopkind = 3
 	READ          mopkind = 4
+
+	// EOF/RST is a special kind of SEND
+	// See if we can just use SEND for this.
+	//EOF mopkind = 5 // like TCP RST / end of file marker sent.
 )
 
 func (k mopkind) String() string {
@@ -456,6 +464,8 @@ func (k mopkind) String() string {
 		return "SEND"
 	case READ:
 		return "READ"
+	//case EOF:
+	//	return "EOF"
 	default:
 		return fmt.Sprintf("unknown mopkind %v", int(k))
 	}
@@ -1045,6 +1055,12 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 		// Service this read with this send.
 
 		read.msg = send.msg // safe b/c already copied in handleSend()
+
+		read.isEOF_RST = send.isEOF_RST // convey EOF/RST
+		if send.isEOF_RST {
+			vv("copied EOF marker from send '%v' \n to read: '%v'", send, read)
+		}
+
 		// advance our logical clock
 		node.LC = max(node.LC, send.originLC) + 1
 		////zz("servicing cli read: started LC %v -> serviced %v (waited: %v) read.sn=%v", read.originLC, node.LC, node.LC-read.originLC, read.sn)
