@@ -105,7 +105,7 @@ type mop struct {
 	completeTm time.Time
 
 	kind mopkind
-	msg  *message
+	msg  *Message
 
 	sendmop *mop // for reads, which send did we get?
 	readmop *mop // for sends, which read did we go to?
@@ -1058,7 +1058,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 
 		read.isEOF_RST = send.isEOF_RST // convey EOF/RST
 		if send.isEOF_RST {
-			vv("copied EOF marker from send '%v' \n to read: '%v'", send, read)
+			//vv("copied EOF marker from send '%v' \n to read: '%v'", send, read)
 		}
 
 		// advance our logical clock
@@ -1377,7 +1377,7 @@ func (s *simnet) createNewTimer(origin *simnode, dur time.Duration, begin time.T
 }
 
 // readMessage reads a framed message from conn.
-func (s *simnet) readMessage(conn net.Conn) (msg *message, err error) {
+func (s *simnet) readMessage(conn net.Conn) (msg *Message, err error) {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1402,7 +1402,7 @@ func (s *simnet) readMessage(conn net.Conn) (msg *message, err error) {
 	return
 }
 
-func (s *simnet) sendMessage(conn net.Conn, msg *message, timeout *time.Duration) error {
+func (s *simnet) sendMessage(conn net.Conn, msg *Message, timeout *time.Duration) error {
 
 	sc := conn.(*simnetConn)
 	isCli := sc.isCli
@@ -1457,7 +1457,7 @@ func newReadMop(isCli bool) (op *mop) {
 	return
 }
 
-func newSendMop(msg *message, isCli bool) (op *mop) {
+func newSendMop(msg *Message, isCli bool) (op *mop) {
 	op = &mop{
 		originCli: isCli,
 		msg:       msg,

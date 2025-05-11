@@ -195,7 +195,7 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 		return
 	}
 
-	msg := newMessage()
+	msg := NewMessage()
 	n = len(p)
 	if n > UserMaxPayload {
 		n = UserMaxPayload
@@ -214,7 +214,7 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 }
 
 // helper for Write. s.mut must be held locked during.
-func (s *simnetConn) msgWrite(msg *message, sendDead chan time.Time, n0 int) (n int, err error) {
+func (s *simnetConn) msgWrite(msg *Message, sendDead chan time.Time, n0 int) (n int, err error) {
 
 	n = n0
 	isCli := s.isCli
@@ -375,7 +375,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 		if read.isEOF_RST {
 			vv("read has EOF mark!")
 			err = io.EOF
-			//s.remoteClosed.Close() // for sure.
+			//s.remoteClosed.Close() // for sure?
 			//s.localClosed.Close()  // this too, maybe?
 		}
 	case <-s.net.halt.ReqStop.Chan:
@@ -401,7 +401,7 @@ func (s *simnetConn) Close() error {
 	// only close local, might still be bytes to read on other end.
 
 	// send the EOF message
-	m := newMessage()
+	m := NewMessage()
 	m.EOF = true
 	vv("Close sending EOF in msgWrite")
 	s.msgWrite(m, nil, 0) // nil send-deadline channel for now. TODO improve?
@@ -482,7 +482,10 @@ func (s *simconnError) Temporary() bool {
 	return s.isTimeout
 }
 
-type message struct {
+// Message is not needed by gosimnet users,
+// but is exported to maintain compatability
+// with the upstream code.
+type Message struct {
 	Serial  int64  `zid:"0"`
 	JobSerz []byte `zid:"1"`
 
@@ -491,13 +494,16 @@ type message struct {
 	EOF bool `zid:"2"`
 }
 
-func (m *message) CopyForSimNetSend() (c *message) {
-	return &message{
+func (m *Message) CopyForSimNetSend() (c *Message) {
+	return &Message{
 		Serial:  atomic.AddInt64(&lastSerialPrivate, 1),
 		JobSerz: append([]byte{}, m.JobSerz...),
 	}
 }
 
-func newMessage() *message {
-	return &message{}
+// NewMessage is not needed by gosimnet users,
+// but is exported to maintain compatability
+// with the upstream code.
+func NewMessage() *Message {
+	return &Message{}
 }
