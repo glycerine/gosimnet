@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	//"os"
+	"io"
 	//"strings"
 	"sync"
 	"testing"
@@ -98,6 +99,8 @@ func Test101_gosimnet_basics(t *testing.T) {
 							vv("server conn exiting on Write error '%v'", err)
 							return
 						}
+						// close the conn to test our EOF sending
+						c2.Close()
 					} // end for
 
 				}(c2)
@@ -116,7 +119,14 @@ func Test101_gosimnet_basics(t *testing.T) {
 		fmt.Fprintf(conn, "hello gosimnet")
 		response, err := bufio.NewReader(conn).ReadString('\n')
 		panicOn(err)
-		vv("client sees response: '%v'", string(response)) // not seen
+		vv("client sees response: '%v'", string(response))
+
+		// reading more should get EOF, since server now closes the file.
+		buf := make([]byte, 1)
+		nr, err := conn.Read(buf)
+		if err != io.EOF {
+			panic(fmt.Sprintf("expected io.EOF, got nr=%v; err = '%v'", nr, err))
+		}
 
 		// timer test
 		t0 := time.Now()
