@@ -606,16 +606,20 @@ func (s *simnet) newPQarrivalTm(owner string) *pq {
 			if av == bv {
 				return 0 // pointer equality is immediate
 			}
-
 			if av.arrivalTm.Before(bv.arrivalTm) {
 				return -1
 			}
 			if av.arrivalTm.After(bv.arrivalTm) {
 				return 1
 			}
-			// INVAR arrivalTm equal, break ties
-			// with the permutor
-			return s.rngTieBreaker()
+			if av.sn < bv.sn {
+				return -1
+			}
+			if av.sn > bv.sn {
+				return 1
+			}
+			// must be the same if same sn.
+			return 0
 		}),
 	}
 }
