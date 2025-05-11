@@ -165,8 +165,8 @@ type simnet struct {
 
 	scenario *scenario
 
-	cfg       *Net
-	simNetCfg *NetConfig
+	cfg       *SimNet
+	simNetCfg *SimNetConfig
 
 	srv *Server
 	cli *Client
@@ -329,7 +329,7 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 
 // idempotent, all servers do this, then register through the same path.
 // This is fine, and expected.
-func (cfg *Net) bootSimNetOnServer(simNetConfig *NetConfig, srv *Server) *simnet {
+func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet {
 
 	//vv("%v newSimNetOnServer top, goro = %v", srv.name, GoroNumber())
 	cfg.simnetRendezvous.singleSimnetMut.Lock()

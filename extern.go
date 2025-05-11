@@ -40,8 +40,8 @@ type localRemoteAddr interface {
 // to a single Server.
 type Client struct {
 	mut     sync.Mutex
-	net     *Net
-	cfg     *NetConfig
+	net     *SimNet
+	cfg     *SimNetConfig
 	name    string
 	halt    *idem.Halter
 	simnode *simnode
@@ -55,8 +55,8 @@ type Client struct {
 
 // NewClient makes a new Client. Its name
 // will double as its network address.
-func (s *Net) NewClient(name string) (cli *Client) {
-	var cfg NetConfig
+func (s *SimNet) NewClient(name string) (cli *Client) {
+	var cfg SimNetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
@@ -74,9 +74,9 @@ func (s *Net) NewClient(name string) (cli *Client) {
 
 // NewClient makes a new Server. Its name
 // will double as its network address.
-func (s *Net) NewServer(name string) (srv *Server) {
+func (s *SimNet) NewServer(name string) (srv *Server) {
 
-	var cfg NetConfig
+	var cfg SimNetConfig
 	if s.cfg != nil {
 		cfg = *s.cfg
 	}
@@ -104,8 +104,8 @@ func (s *Net) NewServer(name string) (srv *Server) {
 // many Clients.
 type Server struct {
 	mut                sync.Mutex
-	cfg                *NetConfig
-	net                *Net
+	cfg                *SimNetConfig
+	net                *SimNet
 	name               string
 	halt               *idem.Halter
 	simnode            *simnode
@@ -115,13 +115,13 @@ type Server struct {
 	boundAddressString string
 }
 
-// Net holds a single gosimnet network.
+// SimNet holds a single gosimnet network.
 // Clients and Servers who want to talk must
-// be created from the same instance of Net,
+// be created from the same instance of SimNet,
 // which they will use to rendezvous; in
 // addition to their addresses (names).
-type Net struct {
-	cfg              *NetConfig
+type SimNet struct {
+	cfg              *SimNetConfig
 	mut              sync.Mutex
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
@@ -130,17 +130,17 @@ type Net struct {
 }
 
 // Close shuts down the gosimnet network.
-func (s *Net) Close() error {
+func (s *SimNet) Close() error {
 	return s.simnetRendezvous.singleSimnet.Close()
 }
 
-// NewNet creates a new instance of a
+// NewSimNet creates a new instance of a
 // gosimnet network simulation.
 // Clients and Servers from
-// different Net can never see or
+// different SimNet can never see or
 // hear from each other.
-func NewNet(cfg *NetConfig) (n *Net) {
-	n = &Net{
+func NewSimNet(cfg *SimNetConfig) (n *SimNet) {
+	n = &SimNet{
 		cfg:              cfg,
 		simnetRendezvous: &simnetRendezvous{},
 	}
@@ -279,16 +279,16 @@ func (ti *Timer) Discard() (wasArmed bool) {
 	return
 }
 
-// NetConfig allows for future custom
+// SimNetConfig allows for future custom
 // settings of the gosimnet. The
-// NewNetConfig function should
+// NewSimNetConfig function should
 // be used to get an initial instance.
 // Currently there are no settings.
-type NetConfig struct{}
+type SimNetConfig struct{}
 
-// NewNetConfig should be called
-// to get an initial NetConfig to
-// set parameters and pass to NewNet().
-func NewNetConfig() *NetConfig {
-	return &NetConfig{}
+// NewSimNetConfig should be called
+// to get an initial SimNetConfig to
+// set parameters and pass to NewSimNet().
+func NewSimNetConfig() *SimNetConfig {
+	return &SimNetConfig{}
 }

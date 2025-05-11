@@ -85,7 +85,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *NetConfig) {
+func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *SimNetConfig) {
 
 	// satisfy uConn interface; don't crash cli/tests that check
 	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}
