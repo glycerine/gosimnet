@@ -69,9 +69,12 @@ type mop struct {
 	readerLC int64
 	originLC int64
 
-	timerC   chan time.Time
-	timerDur time.Duration
-	fileLine string // where was this timer from?
+	timerC        chan time.Time
+	timerDur      time.Duration
+	timerFileLine string // where was this timer from?
+
+	readFileLine string
+	sendFileLine string
 
 	// discards tell us the corresponding create timer here.
 	origTimerMop        *mop
@@ -143,9 +146,9 @@ func (op *mop) String() string {
 	extra := ""
 	switch op.kind {
 	case TIMER:
-		extra = " timer set at " + op.fileLine
+		extra = " timer set at " + op.timerFileLine
 	case TIMER_DISCARD:
-		extra = " timer discarded at " + op.fileLine
+		extra = " timer discarded at " + op.timerFileLine
 	case SEND:
 		extra = fmt.Sprintf(" FROM %v TO %v", op.origin.name, op.target.name)
 	}
@@ -1030,7 +1033,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 			pending.timerDur = dur
 			pending.initTm = now
 			pending.completeTm = now.Add(dur)
-			pending.fileLine = fileLine(1)
+			pending.timerFileLine = fileLine(1)
 			pending.internalPendingTimer = true
 			node.net.handleTimer(pending)
 			return
@@ -1341,7 +1344,7 @@ func (s *simnet) createNewTimer(origin *simnode, dur time.Duration, begin time.T
 	timer.timerDur = dur
 	timer.initTm = begin
 	timer.completeTm = begin.Add(dur)
-	timer.fileLine = fileLine(3)
+	timer.timerFileLine = fileLine(3)
 
 	select {
 	case s.addTimer <- timer:
@@ -1455,7 +1458,7 @@ func (s *simnet) discardTimer(origin *simnode, origTimerMop *mop, discardTm time
 
 	discard := newTimerDiscardMop(origTimerMop)
 	discard.initTm = time.Now()
-	discard.fileLine = fileLine(3)
+	discard.timerFileLine = fileLine(3)
 	discard.origin = origin
 
 	select {

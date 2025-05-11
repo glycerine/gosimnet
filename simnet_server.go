@@ -44,7 +44,7 @@ func (s *Server) Addr() (a net.Addr) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	// avoid data race
-	cp := *s.netAddr
+	cp := *s.simNetAddr
 	return &cp
 }
 
@@ -54,12 +54,13 @@ func (s *Server) Addr() (a net.Addr) {
 func (s *Server) Listen(network, addr string) (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
-	addrCh := make(chan *SimNetAddr, 1)
+	addrCh := make(chan net.Addr, 1)
 	s.runSimNetServer(s.name, addrCh, nil)
 	lsn = s
 	var netAddr *SimNetAddr
 	select {
-	case netAddr = <-addrCh:
+	case netAddrI := <-addrCh:
+		netAddr = netAddrI.(*SimNetAddr)
 	case <-s.halt.ReqStop.Chan:
 		err = ErrShutdown
 	}
@@ -84,7 +85,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, simNetConfig *NetConfig) {
+func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *NetConfig) {
 
 	// satisfy uConn interface; don't crash cli/tests that check
 	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}
@@ -122,7 +123,7 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 	s.mut.Lock() // avoid data races
 	addrs := netAddr.Network() + "://" + netAddr.String()
 	s.boundAddressString = addrs
-	s.netAddr = netAddr
+	s.simNetAddr = netAddr
 	s.mut.Unlock()
 
 	if boundCh != nil {
@@ -139,8 +140,6 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan *SimNetAddr, si
 // the other net.Conn generic Read/Write less so, at the moment.
 type simnetConn struct {
 	mut sync.Mutex
-
-	owner *simnode
 
 	// distinguish cli from srv
 	isCli   bool
@@ -215,7 +214,7 @@ func (s *simnetConn) Write(p []byte) (n int, err error) {
 
 	send := newSendMop(msg, isCli)
 	send.origin = s.local
-	send.fileLine = fileLine(3)
+	send.sendFileLine = fileLine(3)
 	send.target = s.remote
 	send.initTm = time.Now()
 
@@ -324,7 +323,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	read := newReadMop(isCli)
 	read.initTm = time.Now()
 	read.origin = s.local
-	read.fileLine = fileLine(2)
+	read.readFileLine = fileLine(2)
 	read.target = s.remote
 
 	//vv("in simnetConn.Read() isCli=%v, origin=%v at %v; target=%v", s.isCli, read.origin.name, read.fileLine, read.target.name)
@@ -342,6 +341,9 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	case <-s.localClosed.Chan:
 		err = io.EOF
 		return
+		// TODO: implement an EOF "message" sent
+		// after the last send...instead of assuming omniscience
+		// I think we want reads to finish first?
 	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return
@@ -365,6 +367,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	case <-s.localClosed.Chan:
 		err = io.EOF
 		return
+	// TODO: implement an EOF "message" instead of assuming omniscience
 	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return
@@ -453,6 +456,10 @@ func (s *simconnError) Temporary() bool {
 type message struct {
 	Serial  int64  `zid:"0"`
 	JobSerz []byte `zid:"1"`
+
+	// for emulating a socket connection,
+	// after the JobSerz bytes are read that is the end-of-file.
+	EOF bool `zid:"2"`
 }
 
 func (m *message) CopyForSimNetSend() (c *message) {

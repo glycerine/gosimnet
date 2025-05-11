@@ -111,7 +111,7 @@ type Server struct {
 	simnode            *simnode
 	simnet             *simnet
 	boundCh            chan net.Addr
-	netAddr            *SimNetAddr
+	simNetAddr         *SimNetAddr
 	boundAddressString string
 }
 
