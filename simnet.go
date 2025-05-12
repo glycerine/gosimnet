@@ -1028,7 +1028,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 		}
 		// INVAR: this read.initTm <= now
 
-		if now.Before(send.arrivalTm) { // now < send.arrivalTm
+		if send.arrivalTm.After(now) {
 			// are we done? since preArrQ is ordered
 			// by arrivalTm, all subsequent pre-arrivals (sends)
 			// will have even >= arrivalTm.
@@ -1292,20 +1292,21 @@ func (s *simnet) handleTimer(timer *mop) {
 	s.armTimer()
 }
 
-func (s *simnet) armTimer() {
+func (s *simnet) armTimer() time.Duration {
 
 	var minTimer *mop
 	for node := range s.nodes {
 		minTimer = node.soonestTimerLessThan(minTimer)
 	}
 	if minTimer == nil {
-		return
+		return 0
 	}
 	now := time.Now()
 	dur := minTimer.completeTm.Sub(now)
 	////zz("dur=%v = when(%v) - now(%v)", dur, minTimer.completeTm, now)
 	s.lastArmTm = now
 	s.nextTimer.Reset(dur)
+	return dur
 }
 
 func (node *simnode) soonestTimerLessThan(bound *mop) *mop {

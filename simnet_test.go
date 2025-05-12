@@ -112,7 +112,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 
 		vv("cli about to Dial")
 		conn, err := cli.Dial("gosimnet", serverAddr.String())
-		vv("err = '%v'", err) // simnet_test.go:82 2000-01-01 00:00:00.002 +0000 UTC err = 'this client is already connected. create a NewClient()'
+		vv("err from Dial() = '%v'", err)
 		panicOn(err)
 		defer conn.Close()
 
