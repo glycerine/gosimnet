@@ -229,8 +229,8 @@ func (c *SimClient) RemoteAddr() string {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (c *SimClient) NewTimer(dur time.Duration) (ti *RpcTimer) {
-	ti = &RpcTimer{
+func (c *SimClient) NewTimer(dur time.Duration) (ti *SimTimer) {
+	ti = &SimTimer{
 		isCli: true,
 	}
 	ti.simnet = c.simnet
@@ -240,14 +240,14 @@ func (c *SimClient) NewTimer(dur time.Duration) (ti *RpcTimer) {
 	return
 }
 
-// RpcTimer mocks the Go time.Timer object.
+// SimTimer mocks the Go time.Timer object.
 // Unlike Go timers, however, you must
 // arrange to call Timer.Discard() when
 // you are finished with the Timer.
 // At the moment, Reset() is not implemented.
 // Simply Discard the old Timer and create
 // another using NewTimer.
-type RpcTimer struct {
+type SimTimer struct {
 	gotimer  *time.Timer
 	isCli    bool
 	simnode  *simnode
@@ -260,8 +260,8 @@ type RpcTimer struct {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (s *SimServer) NewTimer(dur time.Duration) (ti *RpcTimer) {
-	ti = &RpcTimer{
+func (s *SimServer) NewTimer(dur time.Duration) (ti *SimTimer) {
+	ti = &SimTimer{
 		isCli: false,
 	}
 	ti.simnet = s.simnet
@@ -276,7 +276,7 @@ func (s *SimServer) NewTimer(dur time.Duration) (ti *RpcTimer) {
 // is important to do manually in user code.
 // Unlike the Go runtime, we do not have
 // a garbage collector to clean up for us.
-func (ti *RpcTimer) Discard() (wasArmed bool) {
+func (ti *SimTimer) Discard() (wasArmed bool) {
 	if ti.simnet == nil {
 		ti.gotimer.Stop()
 		ti.gotimer = nil // Go will GC.
