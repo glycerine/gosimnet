@@ -6,14 +6,18 @@ import (
 	"fmt"
 )
 
-const globalUseSynctest bool = false
+const faketime bool = false
 
 func init() {
-	fmt.Printf("globalUseSynctest = %v\n", globalUseSynctest)
+	fmt.Printf("faketime = %v\n", faketime)
 }
 
 func synctestWait_LetAllOtherGoroFinish() {}
 
 func bubbleOrNot(f func()) {
 	f()
+}
+
+func onlyBubbled(t *testing.T, f func()) {
+	t.Skip("onlyBubbled: skipping test")
 }

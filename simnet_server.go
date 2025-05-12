@@ -55,7 +55,7 @@ func (s *SimServer) Listen(network, addr string) (lsn net.Listener, err error) {
 	// start the server, first server boots the network,
 	// but it can continue even if the server is shutdown.
 	addrCh := make(chan net.Addr, 1)
-	s.runSimNetServer(s.name, addrCh, nil)
+	s.runSimNetServer(s.name, addrCh, s.simNetCfg)
 	lsn = s
 	var netAddr *SimNetAddr
 	select {
@@ -357,9 +357,6 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	case <-s.localClosed.Chan:
 		err = io.EOF
 		return
-		// TODO: implement an EOF "message" sent
-		// after the last send...instead of assuming omniscience
-		// I think we want reads to finish first?
 	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return
@@ -389,7 +386,6 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	case <-s.localClosed.Chan:
 		err = io.EOF
 		return
-	// TODO: implement an EOF "message" instead of assuming omniscience
 	case <-s.remoteClosed.Chan:
 		err = io.EOF
 		return

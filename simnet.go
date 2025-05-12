@@ -161,12 +161,12 @@ func (op *mop) String() string {
 
 // simnet simulates a network entirely with channels in memory.
 type simnet struct {
-	useSynctest bool
+	barrier bool
 
 	scenario *scenario
 
-	cfg       *SimNet
-	simNetCfg *SimNetConfig
+	outerWrapper *SimNet
+	simNetCfg    *SimNetConfig
 
 	srv *SimServer
 	cli *SimClient
@@ -329,16 +329,16 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 
 // idempotent, all servers do this, then register through the same path.
 // This is fine, and expected.
-func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *SimServer) *simnet {
+func (net *SimNet) bootSimNetOnServer(simNetCfg *SimNetConfig, srv *SimServer) *simnet {
 
 	//vv("%v newSimNetOnServer top, goro = %v", srv.name, GoroNumber())
-	cfg.simnetRendezvous.singleSimnetMut.Lock()
-	defer cfg.simnetRendezvous.singleSimnetMut.Unlock()
+	net.simnetRendezvous.singleSimnetMut.Lock()
+	defer net.simnetRendezvous.singleSimnetMut.Unlock()
 
-	if cfg.simnetRendezvous.singleSimnet != nil {
+	if net.simnetRendezvous.singleSimnet != nil {
 		// already started. Still, everyone
 		// register separately no matter.
-		return cfg.simnetRendezvous.singleSimnet
+		return net.simnetRendezvous.singleSimnet
 	}
 
 	tick := time.Millisecond
@@ -349,14 +349,14 @@ func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *SimServer
 
 	// server creates simnet; must start server first.
 	s := &simnet{
-		useSynctest:    globalUseSynctest,
-		cfg:            cfg,
+		barrier:        !simNetCfg.BarrierOff,
+		outerWrapper:   net,
+		simNetCfg:      simNetCfg,
 		srv:            srv,
 		halt:           srv.halt,
 		cliRegisterCh:  make(chan *clientRegistration),
 		srvRegisterCh:  make(chan *serverRegistration),
 		alterNodeCh:    make(chan *nodeAlteration),
-		simNetCfg:      simNetConfig,
 		msgSendCh:      make(chan *mop),
 		msgReadCh:      make(chan *mop),
 		addTimer:       make(chan *mop),
@@ -381,7 +381,7 @@ func (cfg *SimNet) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *SimServer
 	}
 	s.nextTimer.Stop()
 
-	cfg.simnetRendezvous.singleSimnet = s
+	net.simnetRendezvous.singleSimnet = s
 	//vv("newSimNetOnServer: assigned to singleSimnet goro = %v", GoroNumber())
 	s.Start()
 
@@ -942,7 +942,7 @@ func (node *simnode) dispatch() { // (bump time.Duration) {
 			// but now there is something possible a
 			// few microseconds later. In this case, don't freak.
 			// So make this conditional on synctest being in use:
-			if !shuttingDown && node.net.useSynctest {
+			if !shuttingDown && faketime {
 				if node.firstPreArrivalTimeLTE(time.Now()) {
 					alwaysPrintf("ummm... why did these not get dispatched? narr = %v, nread = %v; summary node summary:\n%v", narr, nread, node.String())
 					panic("should have been dispatchable, no?")
@@ -1124,7 +1124,7 @@ func (s *simnet) tickLogicalClocks() {
 }
 
 func (s *simnet) Start() {
-	alwaysPrintf("simnet.Start: synctest = %v", s.useSynctest && globalUseSynctest)
+	alwaysPrintf("simnet.Start: faketime = %v; s.barrier=%v", faketime, s.barrier)
 	go s.scheduler()
 }
 
@@ -1161,10 +1161,10 @@ func (s *simnet) scheduler() {
 		s.dispatchAll()
 		s.armTimer()
 
-		// Advance time by one tick.
-		time.Sleep(s.scenario.tick)
+		if faketime && s.barrier {
+			// Advance time by one tick.
+			time.Sleep(s.scenario.tick)
 
-		if s.useSynctest && globalUseSynctest {
 			//vv("about to call synctestWait_LetAllOtherGoroFinish")
 			synctestWait_LetAllOtherGoroFinish()
 			//vv("back from synctest.Wait() goro = %v", GoroNumber())

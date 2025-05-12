@@ -46,13 +46,13 @@ type localRemoteAddr interface {
 // client that can Dial out
 // to a single SimServer.
 type SimClient struct {
-	mut     sync.Mutex
-	net     *SimNet
-	cfg     *SimNetConfig
-	name    string
-	halt    *idem.Halter
-	simnode *simnode
-	simnet  *simnet
+	mut       sync.Mutex
+	net       *SimNet
+	simNetCfg *SimNetConfig
+	name      string
+	halt      *idem.Halter
+	simnode   *simnode
+	simnet    *simnet
 
 	simconn *simnetConn
 	conn    *simnetConn
@@ -64,12 +64,12 @@ type SimClient struct {
 // will double as its network address.
 func (s *SimNet) NewSimClient(name string) (cli *SimClient) {
 	var cfg SimNetConfig
-	if s.cfg != nil {
-		cfg = *s.cfg
+	if s.simNetCfg != nil {
+		cfg = *s.simNetCfg
 	}
 	cli = &SimClient{
 		net:       s,
-		cfg:       &cfg,
+		simNetCfg: &cfg,
 		name:      name,
 		simnet:    s.simnetRendezvous.singleSimnet,
 		halt:      idem.NewHalter(),
@@ -84,15 +84,15 @@ func (s *SimNet) NewSimClient(name string) (cli *SimClient) {
 func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 
 	var cfg SimNetConfig
-	if s.cfg != nil {
-		cfg = *s.cfg
+	if s.simNetCfg != nil {
+		cfg = *s.simNetCfg
 	}
 	srv = &SimServer{
-		net:     s,
-		cfg:     &cfg,
-		name:    name,
-		halt:    idem.NewHalter(),
-		boundCh: make(chan net.Addr, 1),
+		net:       s,
+		simNetCfg: &cfg,
+		name:      name,
+		halt:      idem.NewHalter(),
+		boundCh:   make(chan net.Addr, 1),
 	}
 	// We can't add link up the halters yet, do it
 	// in simnet_server.go, runSimNetServer();
@@ -111,7 +111,7 @@ func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 // many Clients.
 type SimServer struct {
 	mut                sync.Mutex
-	cfg                *SimNetConfig
+	simNetCfg          *SimNetConfig
 	net                *SimNet
 	name               string
 	halt               *idem.Halter
@@ -128,7 +128,7 @@ type SimServer struct {
 // which they will use to rendezvous; in
 // addition to their addresses (names).
 type SimNet struct {
-	cfg              *SimNetConfig
+	simNetCfg        *SimNetConfig
 	mut              sync.Mutex
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
@@ -138,7 +138,10 @@ type SimNet struct {
 
 // Close shuts down the gosimnet network.
 func (s *SimNet) Close() error {
-	return s.simnetRendezvous.singleSimnet.Close()
+	if s.simnetRendezvous != nil && s.simnetRendezvous.singleSimnet != nil {
+		return s.simnetRendezvous.singleSimnet.Close()
+	}
+	return nil
 }
 
 // NewSimNet creates a new instance of a
@@ -148,7 +151,7 @@ func (s *SimNet) Close() error {
 // hear from each other.
 func NewSimNet(cfg *SimNetConfig) (n *SimNet) {
 	n = &SimNet{
-		cfg:              cfg,
+		simNetCfg:        cfg,
 		simnetRendezvous: &simnetRendezvous{},
 	}
 	return

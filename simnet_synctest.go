@@ -4,16 +4,21 @@ package gosimnet
 
 import (
 	"fmt"
+	"testing"
 	"testing/synctest"
 )
 
-const globalUseSynctest bool = true
+const faketime bool = true
 
 func init() {
-	fmt.Printf("globalUseSynctest = %v\n", globalUseSynctest)
+	fmt.Printf("faketime = %v\n", faketime)
 }
 
 func bubbleOrNot(f func()) {
+	synctest.Run(f)
+}
+
+func onlyBubbled(t *testing.T, f func()) {
 	synctest.Run(f)
 }
 
