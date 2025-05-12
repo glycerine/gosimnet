@@ -811,7 +811,7 @@ func (s *simnet) handleSend(send *mop) {
 		// so they can recycle or do whatever without data racing with us.
 		// Weird: even with this, the Fragment is getting
 		// races, not the message.
-		send.msg = send.msg.CopyForSimNetSend()
+		send.msg = send.msg.CopyForSimNetSend() // write race vs :256 simnet_server
 
 		send.target.preArrQ.add(send)
 		//vv("LC:%v  SEND TO %v %v", origin.LC, origin.name, send)

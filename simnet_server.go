@@ -230,7 +230,7 @@ func (s *simnetConn) msgWrite(msg *Message, sendDead chan time.Time, n0 int) (n 
 		send.isEOF_RST = true
 	}
 
-	vv("top simnet.Write(%v) (isEOF_RST: %v) from %v at %v to %v", string(msg.JobSerz), send.isEOF_RST, send.origin.name, send.sendFileLine, send.target.name)
+	//vv("top simnet.Write(%v) (isEOF_RST: %v) from %v at %v to %v", string(msg.JobSerz), send.isEOF_RST, send.origin.name, send.sendFileLine, send.target.name)
 
 	select {
 	case s.net.msgSendCh <- send:
@@ -253,7 +253,7 @@ func (s *simnetConn) msgWrite(msg *Message, sendDead chan time.Time, n0 int) (n 
 		return
 	}
 
-	vv("net has it (isEOF:%v), about to wait for proceed... simnetConn.Write('%v') isCli=%v, origin=%v ; target=%v;", isEOF, string(send.msg.JobSerz), s.isCli, send.origin.name, send.target.name)
+	//vv("net has it (isEOF:%v), about to wait for proceed... simnetConn.Write('%v') isCli=%v, origin=%v ; target=%v;", isEOF, string(send.msg.JobSerz), s.isCli, send.origin.name, send.target.name)
 
 	if isEOF {
 		return 0, nil // don't expect a reply from EOF/RST
@@ -325,7 +325,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	}
 
 	if s.localClosed.IsClosed() {
-		vv("Read at %v: local is already closed", s.local.name)
+		//vv("Read at %v: local is already closed", s.local.name)
 		err = io.EOF
 		return
 	}
@@ -343,7 +343,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	read.readFileLine = fileLine(2)
 	read.target = s.remote
 
-	vv("in simnetConn.Read() isCli=%v, origin=%v at %v; target=%v", s.isCli, read.origin.name, read.readFileLine, read.target.name)
+	//vv("in simnetConn.Read() isCli=%v, origin=%v at %v; target=%v", s.isCli, read.origin.name, read.readFileLine, read.target.name)
 
 	select {
 	case s.net.msgReadCh <- read:
@@ -356,7 +356,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 		//err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
 	case <-s.localClosed.Chan:
-		vv("local side was closed before Read submitted")
+		//vv("local side was closed before Read submitted")
 		err = io.EOF
 		return
 		// comment out so we don't shutdown before getting our read
@@ -372,9 +372,9 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 			// buffer the leftover
 			s.nextRead = append(s.nextRead, msg.JobSerz[n:]...)
 		}
-		vv("Read on '%v' got '%v'; eof: %v", s.local.name, string(data[:n]), read.isEOF_RST)
+		//vv("Read on '%v' got '%v'; eof: %v", s.local.name, string(data[:n]), read.isEOF_RST)
 		if read.isEOF_RST {
-			vv("read has EOF mark! on read at %v from %v", s.local.name, s.remote.name) // seen
+			//vv("read has EOF mark! on read at %v from %v", s.local.name, s.remote.name) // seen
 			err = io.EOF
 			//s.remoteClosed.Close() // for sure?
 			//s.localClosed.Close()  // this too, maybe?
@@ -388,7 +388,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 		//err = &simconnError{isTimeout: true, desc: "i/o timeout"}
 		return
 	case <-s.localClosed.Chan:
-		vv("local side was closed waiting for proceed")
+		//vv("local side was closed waiting for proceed")
 		err = io.EOF
 		return
 		// as above, get our read even if other side has shutdown.
@@ -405,7 +405,7 @@ func (s *simnetConn) Close() error {
 	// send the EOF message
 	m := NewMessage()
 	m.EOF = true
-	vv("Close sending EOF in msgWrite on %v", s.local.name)
+	//vv("Close sending EOF in msgWrite on %v", s.local.name)
 	s.msgWrite(m, nil, 0) // nil send-deadline channel for now. TODO improve?
 
 	s.localClosed.Close()

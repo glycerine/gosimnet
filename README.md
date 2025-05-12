@@ -5,8 +5,9 @@ image: simulacrum of the Go gopher happily toying with traffic.
 gosimnet
 ========
 
-`gosimnet` is a compact network simulator. It is fairly minimal,
-but still hopefully useful. It was written for testing with 
+`gosimnet` is a compact network simulator. It is minimal,
+with a small code base and only two imports, to make
+it useful for many test situations. It was written for testing with 
 testing/synctest (which is very promising/exciting), but
 can run without it too. gosimnet implements the `net.Conn`
 interface to networks. The test file
@@ -17,17 +18,18 @@ I wrote this originally for https://github.com/glycerine/rpc25519
 system testing (simulating network chaos), without
 a net.Conn interface. Then I realized it might 
 be more broadly useful. So I pulled it out and condensed it, adding
-a net.Conn interface, to make it potentially
-usable for wider https://pkg.go.dev/testing/synctest testing.
+the net.Conn interface to allow testing regular Go networking
+code. This hopefully will allow many to benefit
+from https://pkg.go.dev/testing/synctest testing,
+where talking to a real network is verboten.
 
 Since synctest is in the experimental phase, 
 getting early feedback in now to make it as
-usable as possible would benefit all.
+usable as possible would benefit the Go community.
 
-Quality: alpha. The net.Conn implementation in particular is
-rough and ready. The scheduler and dispatcher
-are pretty solid. They got pretty harsh testing
-over in https://github.com/glycerine/rpc25519 .
+Quality: alpha. I'm not aware of any issues,
+but please file any that you encounter.
+
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
 to keep this package petite and approachable, but that does
@@ -35,10 +37,7 @@ not reflect the true degree of testing that
 has been done. Also I assume that with net.Conn
 now available, almost anything can be made
 to run on top of it, and so regular web servers
-etc will provide coverage.
-
-If you spot any issues, on any part, though,
-please let me know.
+etc can be readily deployed to test.
 
 ---
 Author: Jason E. Aten, Ph.D.
