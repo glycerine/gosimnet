@@ -25,10 +25,17 @@ const (
 
 var lastSerialPrivate int64
 
-// ErrShutdown is returned when the
+// ErrShutdown2 is returned when the
 // network or node goes down in the
 // middle of an operation.
-var ErrShutdown = fmt.Errorf("shutting down")
+var ErrShutdown2 = fmt.Errorf("shutting down")
+
+// ErrShutdown returns ErrShutdown2. It
+// is function to make it easy to diagnose
+// where the error came from, if need be.
+func ErrShutdown() error {
+	return ErrShutdown2
+}
 
 type localRemoteAddr interface {
 	RemoteAddr() net.Addr
@@ -182,7 +189,7 @@ func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
 		nc = c.simconn
 		return
 	case <-c.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	}
 	return
@@ -283,8 +290,9 @@ func (ti *Timer) Discard() (wasArmed bool) {
 // settings of the gosimnet. The
 // NewSimNetConfig function should
 // be used to get an initial instance.
-// Currently there are no settings.
-type SimNetConfig struct{}
+type SimNetConfig struct {
+	BarrierOff bool
+}
 
 // NewSimNetConfig should be called
 // to get an initial SimNetConfig to

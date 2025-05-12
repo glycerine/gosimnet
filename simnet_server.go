@@ -27,12 +27,12 @@ func (s *SimServer) Accept() (nc net.Conn, err error) {
 	select {
 	case nc = <-s.simnode.tellServerNewConnCh:
 		if isNil(nc) {
-			err = ErrShutdown
+			err = ErrShutdown()
 			return
 		}
 		//vv("Server.Accept returning nc = '%#v'", nc.(*simnetConn))
 	case <-s.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 	}
 	return
 }
@@ -62,7 +62,7 @@ func (s *SimServer) Listen(network, addr string) (lsn net.Listener, err error) {
 	case netAddrI := <-addrCh:
 		netAddr = netAddrI.(*SimNetAddr)
 	case <-s.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 	}
 	_ = netAddr
 	return
@@ -108,7 +108,7 @@ func (s *SimServer) runSimNetServer(serverAddr string, boundCh chan net.Addr, si
 	// sets s.simnode, s.simnet as side-effect
 	serverNewConnCh, err := simnet.registerServer(s, netAddr)
 	if err != nil {
-		if err == ErrShutdown {
+		if err == ErrShutdown2 {
 			//vv("simnet_server sees shutdown in progress")
 			return
 		}
@@ -236,7 +236,7 @@ func (s *simnetConn) msgWrite(msg *Message, sendDead chan time.Time, n0 int) (n 
 	case s.net.msgSendCh <- send:
 	case <-s.net.halt.ReqStop.Chan:
 		n = 0
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	case timeout := <-sendDead:
 		_ = timeout
@@ -264,7 +264,7 @@ func (s *simnetConn) msgWrite(msg *Message, sendDead chan time.Time, n0 int) (n 
 		return
 	case <-s.net.halt.ReqStop.Chan:
 		n = 0
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	case timeout := <-sendDead:
 		_ = timeout
@@ -347,7 +347,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 	select {
 	case s.net.msgReadCh <- read:
 	case <-s.net.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	case timeout := <-readDead:
 		_ = timeout
@@ -379,7 +379,7 @@ func (s *simnetConn) Read(data []byte) (n int, err error) {
 			//s.localClosed.Close()  // this too, maybe?
 		}
 	case <-s.net.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	case timeout := <-readDead:
 		_ = timeout

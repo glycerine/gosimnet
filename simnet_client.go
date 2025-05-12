@@ -56,17 +56,17 @@ func (c *SimClient) runSimNetClient(localHostPort, serverAddr string) (err error
 	select {
 	case c.simnet.cliRegisterCh <- registration:
 	case <-c.simnet.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	case <-c.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	}
 
 	select {
 	case <-registration.done:
 	case <-c.simnet.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	case <-c.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	}
 
 	conn := registration.conn
@@ -81,7 +81,7 @@ func (c *SimClient) runSimNetClient(localHostPort, serverAddr string) (err error
 	select {
 	case c.connected <- nil:
 	case <-c.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	}
 	return
 }

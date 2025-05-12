@@ -241,7 +241,7 @@ func (s *simnet) newSimnode(name string) *simnode {
 	}
 }
 func (s *simnet) Close() error {
-	s.halt.ReqStop.CloseWithReason(ErrShutdown)
+	s.halt.ReqStop.CloseWithReason(ErrShutdown())
 	return nil
 }
 func (s *simnet) newSimnodeClient(name string) (node *simnode) {
@@ -1391,13 +1391,13 @@ func (s *simnet) readMessage(conn net.Conn) (msg *Message, err error) {
 	select {
 	case s.msgReadCh <- read:
 	case <-s.halt.ReqStop.Chan:
-		return nil, ErrShutdown
+		return nil, ErrShutdown()
 	}
 	select {
 	case <-read.proceed:
 		msg = read.msg
 	case <-s.halt.ReqStop.Chan:
-		return nil, ErrShutdown
+		return nil, ErrShutdown()
 	}
 	return
 }
@@ -1416,12 +1416,12 @@ func (s *simnet) sendMessage(conn net.Conn, msg *Message, timeout *time.Duration
 	select {
 	case s.msgSendCh <- send:
 	case <-s.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	}
 	select {
 	case <-send.proceed:
 	case <-s.halt.ReqStop.Chan:
-		return ErrShutdown
+		return ErrShutdown()
 	}
 	return nil
 }
@@ -1551,7 +1551,7 @@ func (s *simnet) registerServer(srv *SimServer, srvNetAddr *SimNetAddr) (newCliC
 	case s.srvRegisterCh <- reg:
 		//vv("sent registration on srvRegisterCh; about to wait on done goro = %v", GoroNumber())
 	case <-s.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	}
 	select {
@@ -1565,7 +1565,7 @@ func (s *simnet) registerServer(srv *SimServer, srvNetAddr *SimNetAddr) (newCliC
 		newCliConnCh = reg.tellServerNewConnCh
 		return
 	case <-s.halt.ReqStop.Chan:
-		err = ErrShutdown
+		err = ErrShutdown()
 		return
 	}
 	return
