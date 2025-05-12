@@ -27,9 +27,9 @@ Since synctest is in the experimental phase,
 getting early feedback in now to make it as
 usable as possible would benefit the Go community.
 
-Quality: ready for punishment. I'm not aware of any issues,
-but this needs additional stress testing.
-Please file any that you encounter.
+Quality: high; ready for stress testing. I'm not aware of any issues,
+but this needs additional real use. Bring on your tests;
+please file any that you encounter.
 
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
