@@ -1,6 +1,6 @@
-github.com/glycerine/idem v0.17.0 h1:C5s5btvwOGUSYEksN7B+6wObrGiptwo63tUIvbnjg4E=
-github.com/glycerine/idem v0.17.0/go.mod h1:uGbEAxfvHVciE0wVZVO9FbBFhkcXyQUZJhHCthQZSU4=
-github.com/glycerine/process_wide_single_rwmutex v1.0.0 h1:ykGR5st6a6LMYftBJDtohM/+HwS+6qP3jiDXiXmkuEM=
-github.com/glycerine/process_wide_single_rwmutex v1.0.0/go.mod h1:SdiBPLE7oOa6SBnpK7my2Fnd1+DUeQv3RJOcnnJiIvw=
+github.com/glycerine/idem v0.18.0 h1:rO6XWe8WtIppMWrrmUATMBsHsVbpmCr1hsQq0eK72uI=
+github.com/glycerine/idem v0.18.0/go.mod h1:gA9QRaEvbRow2nBLZRrTPV36h9VsZ31Kdz6e0iRVkSo=
+github.com/glycerine/one_tree_rwmut v1.0.0 h1:S9/US5QeXZVrXc/0tSUD58NAxKQY9CaezDcD7pwSVtI=
+github.com/glycerine/one_tree_rwmut v1.0.0/go.mod h1:eKKXEG3WkBtQOka9ANdHuIlhqNCc45NcDjBFaG/FMmU=
 github.com/glycerine/rbtree v0.2.1 h1:9nD5PDojW8gu1slYBzzH7VND9gbSjB86tusW5YRKghc=
 github.com/glycerine/rbtree v0.2.1/go.mod h1:skpUtSrm1HHyLo+HayukOvAmXtE/F6tsVW0uCpaBGWE=
