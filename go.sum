@@ -1,12 +1,6 @@
-github.com/glycerine/global_single_mutex v1.0.2 h1:KC/sPOj5ja496xEbpWCQq/5Ut+hCTfIn/LJTloUpVTc=
-github.com/glycerine/global_single_mutex v1.0.2/go.mod h1:EMPzf5TwCw2yeYDzrlojUyL8XJ6qWgLScXhnvUrB/bw=
-github.com/glycerine/idem v0.9.6 h1:UT/NeBfEi+aVsw1dAXafTgA0yfovHnRJ3PbTnpxsdKI=
-github.com/glycerine/idem v0.9.6/go.mod h1:vFYNiwmmva2CEglryb5rMQdTqEGOSkpBMNl9z4JDneo=
-github.com/glycerine/idem v0.10.2 h1:GYDf0iEM6j6WWVf2MuNQJksnsEIQ9jZpIMVErc6lP30=
-github.com/glycerine/idem v0.10.2/go.mod h1:vFYNiwmmva2CEglryb5rMQdTqEGOSkpBMNl9z4JDneo=
-github.com/glycerine/idem v0.11.0 h1:kHlHkgTt055K2YCSynZDjy0ecK7gIGqDLBwjVA8mSPw=
-github.com/glycerine/idem v0.11.0/go.mod h1:vFYNiwmmva2CEglryb5rMQdTqEGOSkpBMNl9z4JDneo=
-github.com/glycerine/idem v0.16.0 h1:TGNDrldXaDmNLg0zrixDblphHT+pbu8ESmHxTgBWL4o=
-github.com/glycerine/idem v0.16.0/go.mod h1:gFXkQwcePfNlt+Pz43ZpmDxIcf+TJBJdrDBfH1zqRqU=
+github.com/glycerine/idem v0.17.0 h1:C5s5btvwOGUSYEksN7B+6wObrGiptwo63tUIvbnjg4E=
+github.com/glycerine/idem v0.17.0/go.mod h1:uGbEAxfvHVciE0wVZVO9FbBFhkcXyQUZJhHCthQZSU4=
+github.com/glycerine/process_wide_single_rwmutex v1.0.0 h1:ykGR5st6a6LMYftBJDtohM/+HwS+6qP3jiDXiXmkuEM=
+github.com/glycerine/process_wide_single_rwmutex v1.0.0/go.mod h1:SdiBPLE7oOa6SBnpK7my2Fnd1+DUeQv3RJOcnnJiIvw=
 github.com/glycerine/rbtree v0.2.1 h1:9nD5PDojW8gu1slYBzzH7VND9gbSjB86tusW5YRKghc=
 github.com/glycerine/rbtree v0.2.1/go.mod h1:skpUtSrm1HHyLo+HayukOvAmXtE/F6tsVW0uCpaBGWE=

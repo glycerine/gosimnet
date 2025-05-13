@@ -4,6 +4,7 @@ package gosimnet
 
 import (
 	"fmt"
+	"testing"
 )
 
 const faketime bool = false
