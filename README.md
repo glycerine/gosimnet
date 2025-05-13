@@ -97,7 +97,7 @@ and can be omitted.
 
 Servers and clients can be easily "multi-homed",
 as their origin address is any 
-string name they choose.
+string they choose.
 
 A small, conceptual, disadvantage of this simple string
 name-as-address design (skipping DNS and ports) might be that
