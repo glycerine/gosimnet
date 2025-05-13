@@ -87,7 +87,7 @@ human readable addressing, and no network
 specific address convention to emulate.
 
 The convention of a server binding ":0" to get
-a free port is not implemented, as ports
+a free port is not implemented (at the moment), as ports
 are not really needed as a separate concept.
 This would be trivial to add, but just
 adds extra steps to server setup. It's a
