@@ -72,27 +72,28 @@ https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L311
 
 Other limitations
 
-Host addresses at the moment are kept 
-as simple as possible -- just a name string.
+Network connection endpoints ("addresses")
+at the moment are kept as simple as 
+possible -- just a string.
 
-You can interpret this as the host name,
+You can interpret this string as the host name,
 or make it opaque if you wish by letting it be the
 a string like "127.0.0.1:8080"; or even
 let it be a whole URL. The system
-does not care what the name string is,
-only that each node has a unique name.
+does not care what the endpoint string is,
+only that each node has a unique one.
 
 Thus there is no need to emuate DNS to get
 human readable addressing, and no network
 specific address convention to emulate.
-
 The convention of a server binding ":0" to get
 a free port is not implemented (at the moment), as ports
 are not really needed as a separate concept.
 This would be trivial to add, but just
-adds extra steps to server setup. It's a
-vestige of the 16-bit computers that 
-the Internet Protocol was designed on.
+adds extra steps to server setup. All
+this machinery is a vestige of the 16-bit computers that 
+the Internet Protocol was designed on,
+and can be omitted.
 
 Servers and clients can be easily "multi-homed",
 as their origin address is any 
