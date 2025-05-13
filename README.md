@@ -29,16 +29,14 @@ usable as possible would benefit the Go community.
 
 Quality: high; ready for stress testing. I'm not aware of any issues,
 but this needs additional real use. Bring on your tests;
-please file any that you encounter.
+please file any issues that you encounter, or
+suggestions for improvements.
 
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
-to keep this package petite and approachable, but that does
-not reflect the true degree of testing that
-has been done. Also I assume that with net.Conn
-now available, almost anything can be made
-to run on top of it, and so regular web servers
-etc can be readily deployed to test.
+to keep this package petite and approachable
+at first; that does not reflect the true 
+degree of testing that has been done. 
 
 ---
 Author: Jason E. Aten, Ph.D.
