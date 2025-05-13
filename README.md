@@ -77,11 +77,12 @@ at the moment are kept as simple as
 possible -- just a string.
 
 You can interpret this string as the host name,
-or make it opaque if you wish by letting it be the
-a string like "127.0.0.1:8080"; or even
+as a host + port, or make it opaque if 
+you wish by letting it be the
+a string like "127.0.0.1:8080", or even
 let it be a whole URL. The system
 does not care what the endpoint string is,
-only that each node has a unique one.
+only that each endpoint has a unique name.
 
 Thus there is no need to emuate DNS to get
 human readable addressing, and no network
@@ -103,7 +104,10 @@ A small, conceptual, disadvantage of this simple
 string-as-address design (skipping DNS and ports) might be that
 there is no guard against a user accidentally simulating
 their host being in two physical
-places at once by mistake.
+places at once by mistake. Rules to enforce
+conventions about which endpoint has which
+string can be easily added if their
+need becomes apparent.
 
 ---
 Author: Jason E. Aten, Ph.D.
