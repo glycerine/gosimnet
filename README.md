@@ -33,15 +33,21 @@ additional real use. Bring on your most punishing tests;
 and please file any issues that you encounter, or
 suggestions for improvement.
 
-The test here is just a minimal example. I have
-not brought other more punishing tests over 
-to keep this package petite and approachable
-at first; this short demo does not reflect the true 
+The basic test here is just a minimal example. 
+This short demo does not reflect the true 
 degree of testing that has been done.
-rpc25519 has an extensive test suite, and
+I have not brought over (yet) other more 
+punishing tests, to keep this package petite 
+and approachable.
+
+My rpc25519 package has an extensive test suite, and
 includes a full rsync-like protocol for
 efficient filesystem sync. gosimnet passes
-all of those tests.
+all of those tests. They can be found in these two files:
+
+https://github.com/glycerine/rpc25519/blob/master/simnet_test.go
+
+https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
 ---
 Author: Jason E. Aten, Ph.D.
