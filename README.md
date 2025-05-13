@@ -35,8 +35,8 @@ suggestions for improvements.
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
 to keep this package petite and approachable
-at first; that does not reflect the true 
-degree of testing that has been done. 
+at first. This short demo does not reflect the true 
+degree of testing that has been done.
 rpc25519 has an extensive test suite, and
 includes a full rsync-like protocol for
 efficient filesystem sync; gosimnet passes
