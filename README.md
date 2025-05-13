@@ -76,7 +76,7 @@ Host addresses at the moment are kept
 as simple as possible -- just a name string.
 
 You can interpret this as the host name,
-or make it opaque if wish by letting it be the
+or make it opaque if you wish by letting it be the
 a string like "127.0.0.1:8080"; the system
 does not care. 
 
