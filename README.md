@@ -52,6 +52,24 @@ https://github.com/glycerine/rpc25519/blob/master/simnet_test.go
 
 https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
+The caveat to this is that the net.Conn
+interface was layered on top of the core
+simnet functionality for pushing and
+pulling bytes through the network. So
+although the network simulation is
+very solid, the net.Conn layer on
+top is still fairly new. As such, it 
+has received much less exercise.
+It could use review/other eyes
+on its net.Conn.Read() and Write()
+methods to catch or anticipate
+cases that are not yet handled.
+
+https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L183
+
+https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L311
+
+
 ---
 Author: Jason E. Aten, Ph.D.
 
