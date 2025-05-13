@@ -88,10 +88,6 @@ The convention of a server binding ":0" to get
 a free port is not implemented, as ports
 are not really needed as a separate concept.
 
-There is presently no check that each
-name is unique, though we should probably
-insist on that to catch programmer errors.
-
 Servers and clients can be easily "multi-homed",
 as their origin address is any 
 string name they are given.
