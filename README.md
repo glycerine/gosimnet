@@ -77,8 +77,10 @@ as simple as possible -- just a name string.
 
 You can interpret this as the host name,
 or make it opaque if you wish by letting it be the
-a string like "127.0.0.1:8080"; the system
-does not care. 
+a string like "127.0.0.1:8080"; or even
+let it be a whole URL. The system
+does not care what the name string is,
+only that each node has a unique name.
 
 Thus there is no need to emuate DNS to get
 human readable addressing, and no network
