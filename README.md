@@ -89,7 +89,10 @@ specific address convention to emulate.
 The convention of a server binding ":0" to get
 a free port is not implemented, as ports
 are not really needed as a separate concept.
-This would be trivial to add if need be.
+This would be trivial to add, but just
+adds extra steps to server setup. Its a
+vestige of the 16-bit computers that 
+the Internet Protocol was designed on.
 
 Servers and clients can be easily "multi-homed",
 as their origin address is any 
