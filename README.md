@@ -80,7 +80,7 @@ specific address convention to emulate.
 This does mean that servers currently "listen" on
 the moral equivalent of only a single IP port
 at a time. It would not be too difficult
-to add ports, but I have not needed them.
+to add ports, but I have not needed them yet.
 
 ---
 Author: Jason E. Aten, Ph.D.
