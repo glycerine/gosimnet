@@ -36,9 +36,12 @@ suggestions for improvement.
 The basic test here is just a minimal example. 
 This short demo does not reflect the true 
 degree of testing that has been done.
-I have not brought over (yet) other more 
+I have not brought over other more 
 punishing tests, to keep this package petite 
-and approachable.
+and approachable. This also avoids some of
+the extensive setup required that would
+arguably distract from understanding the simple
+facility provided here, but I may do so in the future.
 
 My rpc25519 package has an extensive test suite, and
 includes a full rsync-like protocol for
