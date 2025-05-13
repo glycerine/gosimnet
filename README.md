@@ -63,7 +63,8 @@ has received much less exercise.
 It could use review/other eyes
 on its net.Conn.Read() and Write()
 methods to catch or anticipate
-cases that are not yet handled.
+cases that are not yet handled, and
+more tests.
 
 https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L183
 
