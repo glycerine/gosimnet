@@ -23,24 +23,25 @@ code. This hopefully will allow many to benefit
 from https://pkg.go.dev/testing/synctest testing,
 where talking to a real network is verboten.
 
-Since synctest is in the experimental phase, 
+(Since synctest is in the experimental phase, 
 getting early feedback in now to make it as
-usable as possible would benefit the Go community.
+usable as possible would benefit the Go community).
 
-Quality: high; ready for stress testing. I'm not aware of any issues,
-but this needs additional real use. Bring on your tests;
-please file any issues that you encounter, or
-suggestions for improvements.
+gosimnet quality: high; ready for stress testing. 
+I'm not aware of any issues, but this needs 
+additional real use. Bring on your most punishing tests;
+and please file any issues that you encounter, or
+suggestions for improvement.
 
 The test here is just a minimal example. I have
 not brought other more punishing tests over 
 to keep this package petite and approachable
-at first. This short demo does not reflect the true 
+at first; this short demo does not reflect the true 
 degree of testing that has been done.
 rpc25519 has an extensive test suite, and
 includes a full rsync-like protocol for
-efficient filesystem sync; gosimnet passes
-all these tests.
+efficient filesystem sync. gosimnet passes
+all of those tests.
 
 ---
 Author: Jason E. Aten, Ph.D.
