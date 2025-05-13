@@ -96,8 +96,8 @@ this machinery is a vestige of the 16-bit computers that
 the Internet Protocol was designed on,
 and can be omitted.
 
-Servers and clients can be easily "multi-homed",
-as their origin address is any 
+Servers and clients can be "multi-homed"
+trivially, as their endpoint address is any 
 string they choose.
 
 A small, conceptual, disadvantage of this simple 
