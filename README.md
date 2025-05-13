@@ -99,8 +99,8 @@ Servers and clients can be easily "multi-homed",
 as their origin address is any 
 string they choose.
 
-A small, conceptual, disadvantage of this simple string
-name-as-address design (skipping DNS and ports) might be that
+A small, conceptual, disadvantage of this simple 
+string-as-address design (skipping DNS and ports) might be that
 there is no guard against a user accidentally simulating
 their host being in two physical
 places at once by mistake.
