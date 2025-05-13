@@ -492,7 +492,10 @@ type Message struct {
 	JobSerz []byte `zid:"1"`
 
 	// for emulating a socket connection,
-	// after the JobSerz bytes are read that is the end-of-file.
+	// after the JobSerz bytes are read,
+	// is this the end-of-file?
+	// Doubles as TCP RST (reset socket)
+	// at the moment.
 	EOF bool `zid:"2"`
 }
 
