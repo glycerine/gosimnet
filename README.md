@@ -64,12 +64,23 @@ It could use review/other eyes
 on its net.Conn.Read() and Write()
 methods to catch or anticipate
 cases that are not yet handled, and
-more tests.
+more tests. 
 
 https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L183
 
 https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L311
 
+Other limitations
+
+Host addresses at the moment are kept 
+as simple as possible -- just the host name.
+Thus there is no need to emuate DNS to get
+human readable addressing, and no network
+specific address convention to emulate.
+This does mean that servers currently "listen" on
+the moral equivalent of only a single IP port
+at a time. It would not be too difficult
+to add ports, but I have not needed them.
 
 ---
 Author: Jason E. Aten, Ph.D.
