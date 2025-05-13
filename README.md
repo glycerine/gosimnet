@@ -89,6 +89,7 @@ specific address convention to emulate.
 The convention of a server binding ":0" to get
 a free port is not implemented, as ports
 are not really needed as a separate concept.
+This would be trivial to add if need be.
 
 Servers and clients can be easily "multi-homed",
 as their origin address is any 
