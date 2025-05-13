@@ -90,7 +90,7 @@ The convention of a server binding ":0" to get
 a free port is not implemented, as ports
 are not really needed as a separate concept.
 This would be trivial to add, but just
-adds extra steps to server setup. Its a
+adds extra steps to server setup. It's a
 vestige of the 16-bit computers that 
 the Internet Protocol was designed on.
 
