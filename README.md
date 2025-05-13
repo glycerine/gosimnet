@@ -37,6 +37,10 @@ not brought other more punishing tests over
 to keep this package petite and approachable
 at first; that does not reflect the true 
 degree of testing that has been done. 
+rpc25519 has an extensive test suite, and
+includes a full rsync-like protocol for
+efficient filesystem sync; gosimnet passes
+all these tests.
 
 ---
 Author: Jason E. Aten, Ph.D.
