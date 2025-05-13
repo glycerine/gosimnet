@@ -73,10 +73,34 @@ https://github.com/glycerine/gosimnet/blob/master/simnet_server.go#L311
 Other limitations
 
 Host addresses at the moment are kept 
-as simple as possible -- just the host name.
+as simple as possible -- just a name string.
+
+You can interpret this as the host name,
+or make it opaque if wish by letting it be the
+a string like "127.0.0.1:8080"; the system
+does not care. 
+
 Thus there is no need to emuate DNS to get
 human readable addressing, and no network
 specific address convention to emulate.
+
+The convention of a server binding ":0" to get
+a free port is not implemented, as ports
+are not really needed as a separate concept.
+
+There is presently no check that each
+name is unique, though we should probably
+insist on that to catch programmer errors.
+
+Servers and clients can be easily "multi-homed",
+as their origin address is any 
+string name they are given.
+
+A small, conceptual, disadvantage of this simple string
+name-as-address design (skipping DNS and ports) might be that
+there is no guard against a user accidentally simulating
+their host being in two physical
+places at once by mistake.
 
 ---
 Author: Jason E. Aten, Ph.D.
