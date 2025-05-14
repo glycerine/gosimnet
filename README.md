@@ -1,11 +1,11 @@
 ![image](https://github.com/user-attachments/assets/d671bf05-5688-4f46-b685-63beb29826ab)
 
-image: simulacrum of the Go gopher happily toying with traffic.
+Image: simulacrum of the Go gopher happily toying with traffic.
 
 gosimnet
 ========
 
-`gosimnet` is a compact network simulator. It is minimal,
+gosimnet is a compact network simulator. It is minimal,
 with a small code base and only two imports, to make
 it useful for many test situations. It was written for testing with 
 testing/synctest (which is very promising/exciting), but
