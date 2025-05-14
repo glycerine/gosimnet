@@ -281,8 +281,6 @@ func (s *SimServer) NewTimer(dur time.Duration) (ti *SimTimer) {
 // a garbage collector to clean up for us.
 func (ti *SimTimer) Discard() (wasArmed bool) {
 	if ti.simnet == nil {
-		ti.gotimer.Stop()
-		ti.gotimer = nil // Go will GC.
 		return
 	}
 	wasArmed = ti.simnet.discardTimer(ti.simnode, ti.simtimer, time.Now())
