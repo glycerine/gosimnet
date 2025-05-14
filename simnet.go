@@ -1166,7 +1166,6 @@ func (s *simnet) scheduler() {
 		//vv("scheduler top") //  cli.LC = %v ; srv.LC = %v", cliLC, srvLC)
 		//vv("scheduler top. schedulerReport: \n%v", s.schedulerReport())
 
-		s.dispatchAll()
 		s.armTimer()
 
 		if faketime && s.barrier {
@@ -1181,6 +1180,14 @@ func (s *simnet) scheduler() {
 			//vv("skipped synctest.Wait")
 			time.Sleep(s.scenario.tick)
 		}
+
+		// We dispatch only after the synctest.Wait
+		// guarantee that we are lone/awake goro.
+		// Both the dispatch and the channel
+		// ops below will wake up nodes. Otherwise
+		// other goro might still be active, so this
+		// doing all waking now gives better reproducibility.
+		s.dispatchAll()
 
 		select { // scheduler main select
 		case alert := <-s.nextTimer.C: // soonest timer fires
