@@ -1158,9 +1158,6 @@ func (s *simnet) scheduler() {
 	// main scheduler loop
 	for i := int64(0); ; i++ {
 
-		// each scheduler loop tick is an event.
-		s.tickLogicalClocks()
-
 		now := time.Now()
 		_ = now
 		//vv("scheduler top") //  cli.LC = %v ; srv.LC = %v", cliLC, srvLC)
@@ -1180,6 +1177,9 @@ func (s *simnet) scheduler() {
 			//vv("skipped synctest.Wait")
 			time.Sleep(s.scenario.tick)
 		}
+
+		// each scheduler loop tick is an event.
+		s.tickLogicalClocks()
 
 		// We dispatch only after the synctest.Wait
 		// guarantee that we are lone/awake goro.
