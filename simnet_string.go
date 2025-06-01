@@ -155,7 +155,7 @@ func (op *mop) String() string {
 	}
 	var msgSerial int64
 	if op.msg != nil {
-		msgSerial = op.msg.HDR.Serial
+		msgSerial = op.msg.Serial
 	}
 	who := "SERVER"
 	if op.originCli {

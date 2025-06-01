@@ -539,8 +539,7 @@ func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
 
 	//vv("Client.DialSimnet called with local='%v', server='%v'", c.name, address)
 
-	// false => no read/send loops
-	err = c.runSimNetClient(c.name, address, false)
+	err = c.runSimNetClient(c.name, address)
 
 	select {
 	case <-c.connected:
@@ -562,7 +561,7 @@ func (s *Server) Close() error {
 	if s.simnode == nil {
 		return nil // not an error to Close before we started.
 	}
-	s.simnet.alterNode(s.simnode, SHUTDOWN)
+	s.simnet.AlterHost(s.simnode.name, SHUTDOWN)
 	//vv("simnet.alterNode(s.simnode, SHUTDOWN) done for %v", s.name)
 	s.halt.ReqStop.Close()
 	// nobody else we need ack from, so don't hang on:

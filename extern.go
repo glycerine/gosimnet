@@ -32,6 +32,7 @@ type localRemoteAddr interface {
 // client that can Dial out
 // to a single Server.
 type Client struct {
+	cfg       *Config
 	mut       sync.Mutex
 	net       *SimNet
 	simNetCfg *SimNetConfig
@@ -97,6 +98,7 @@ func (s *SimNet) NewServer(name string) (srv *Server) {
 // many Clients.
 type Server struct {
 	mut                sync.Mutex
+	cfg                *Config
 	simNetCfg          *SimNetConfig
 	net                *SimNet
 	name               string
@@ -144,20 +146,20 @@ type simnetRendezvous struct {
 	singleSimnet    *simnet
 }
 
-// AlterNode lets you simulate network and
+// AlterHost lets you simulate network and
 // server node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Server) AlterNode(alter Alteration) {
-	s.simnet.alterNode(s.simnode, alter)
+func (s *Server) AlterHost(alter Alteration) {
+	s.simnet.AlterHost(s.simnode.name, alter)
 }
 
-// AlterNode lets you simulate network and
+// AlterHost lets you simulate network and
 // client node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Client) AlterNode(alter Alteration) {
-	s.simnet.alterNode(s.simnode, alter)
+func (s *Client) AlterHost(alter Alteration) {
+	s.simnet.AlterHost(s.simnode.name, alter)
 }
 
 /*
@@ -188,7 +190,7 @@ func (s *Client) Close() error {
 	if s.simnode == nil {
 		return nil // not an error to Close before we started.
 	}
-	s.simnet.alterNode(s.simnode, SHUTDOWN)
+	s.simnet.AlterHost(s.simnode.name, SHUTDOWN)
 	s.halt.ReqStop.Close()
 	return nil
 }
@@ -286,5 +288,12 @@ func NewSimNetConfig() *SimNetConfig {
 }
 
 type Config struct {
+	QuietTestMode    bool
 	simnetRendezvous *simnetRendezvous
+	serverBaseID     string
+	SimNetConfig     *SimNetConfig
 }
+
+// allow simnet to properly classify LoneCli vs autocli
+// associted with server peers.
+const auto_cli_recognition_prefix = "auto-cli-from-"
