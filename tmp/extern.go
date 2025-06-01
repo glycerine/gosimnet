@@ -9,6 +9,20 @@ import (
 	"github.com/glycerine/idem"
 )
 
+const (
+	// UserMaxPayload is the maximum size in bytes
+	// for network messages. This does not restrict
+	// the user from doing io.Copy() to send a larger
+	// stream, of course. It is mostly an internal net.Conn
+	// implementation detail, but being aware of it
+	// may allow user code to optimize their Writes.
+	// For larger sends, simply make multipe net.Conn.Write calls,
+	// advancing the slice by the returned written count
+	// each time; or, as above, wrap your slice in a bytes.Buffer
+	// and use io.Copy().
+	UserMaxPayload = 1_200_000
+)
+
 var lastSerialPrivate int64
 
 // ErrShutdown2 is returned when the
@@ -28,10 +42,10 @@ type localRemoteAddr interface {
 	LocalAddr() net.Addr
 }
 
-// Client simulates a network
+// SimClient simulates a network
 // client that can Dial out
-// to a single Server.
-type Client struct {
+// to a single SimServer.
+type SimClient struct {
 	mut       sync.Mutex
 	net       *SimNet
 	simNetCfg *SimNetConfig
@@ -40,20 +54,20 @@ type Client struct {
 	simnode   *simnode
 	simnet    *simnet
 
-	simconn *simconn
-	conn    *simconn
+	simconn *simnetConn
+	conn    *simnetConn
 
 	connected chan error
 }
 
 // NewClient makes a new Client. Its name
 // will double as its network address.
-func (s *SimNet) NewClient(name string) (cli *Client) {
-	var cfg Config
+func (s *SimNet) NewSimClient(name string) (cli *SimClient) {
+	var cfg SimNetConfig
 	if s.simNetCfg != nil {
 		cfg = *s.simNetCfg
 	}
-	cli = &Client{
+	cli = &SimClient{
 		net:       s,
 		simNetCfg: &cfg,
 		name:      name,
@@ -65,15 +79,15 @@ func (s *SimNet) NewClient(name string) (cli *Client) {
 	return
 }
 
-// NewServer makes a new Server. Its name
+// NewSimServer makes a new SimServer. Its name
 // will double as its network address.
-func (s *SimNet) NewServer(name string) (srv *Server) {
+func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 
-	var cfg Config
+	var cfg SimNetConfig
 	if s.simNetCfg != nil {
 		cfg = *s.simNetCfg
 	}
-	srv = &Server{
+	srv = &SimServer{
 		net:       s,
 		simNetCfg: &cfg,
 		name:      name,
@@ -95,9 +109,9 @@ func (s *SimNet) NewServer(name string) (srv *Server) {
 // Server simulates a server process
 // that can Accept connections from
 // many Clients.
-type Server struct {
+type SimServer struct {
 	mut                sync.Mutex
-	simNetCfg          *Config
+	simNetCfg          *SimNetConfig
 	net                *SimNet
 	name               string
 	halt               *idem.Halter
@@ -114,7 +128,7 @@ type Server struct {
 // which they will use to rendezvous; in
 // addition to their addresses (names).
 type SimNet struct {
-	simNetCfg        *Config
+	simNetCfg        *SimNetConfig
 	mut              sync.Mutex
 	simnetRendezvous *simnetRendezvous
 	localAddress     string
@@ -135,7 +149,7 @@ func (s *SimNet) Close() error {
 // Clients and Servers from
 // different SimNet can never see or
 // hear from each other.
-func NewSimNet(cfg *Config) (n *SimNet) {
+func NewSimNet(cfg *SimNetConfig) (n *SimNet) {
 	n = &SimNet{
 		simNetCfg:        cfg,
 		simnetRendezvous: &simnetRendezvous{},
@@ -154,7 +168,7 @@ type simnetRendezvous struct {
 // server node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Server) AlterNode(alter Alteration) {
+func (s *SimServer) AlterNode(alter Alteration) {
 	s.simnet.alterNode(s.simnode, alter)
 }
 
@@ -162,12 +176,12 @@ func (s *Server) AlterNode(alter Alteration) {
 // client node failures.
 // The alter setting can be one of SHUTDOWN,
 // PARTITION, UNPARTITION, RESTART.
-func (s *Client) AlterNode(alter Alteration) {
+func (s *SimClient) AlterNode(alter Alteration) {
 	s.simnet.alterNode(s.simnode, alter)
 }
 
 // Dial connects a Client to a Server.
-func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
+func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
 
 	//vv("Client.Dial called with local='%v', server='%v'", c.name, address)
 
@@ -186,7 +200,7 @@ func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
 
 // Close terminates the Client,
 // moving it to SHUTDOWN state.
-func (s *Client) Close() error {
+func (s *SimClient) Close() error {
 	//vv("Client.Close running")
 
 	if s.simnode == nil {
@@ -199,7 +213,7 @@ func (s *Client) Close() error {
 
 // LocalAddr retreives the local address that the
 // Client is calling from.
-func (c *Client) LocalAddr() string {
+func (c *SimClient) LocalAddr() string {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	return c.net.localAddress
@@ -207,7 +221,7 @@ func (c *Client) LocalAddr() string {
 
 // RemoteAddr retreives the remote address for
 // the Server that the Client is connected to.
-func (c *Client) RemoteAddr() string {
+func (c *SimClient) RemoteAddr() string {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 
@@ -218,7 +232,7 @@ func (c *Client) RemoteAddr() string {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (c *Client) NewTimer(dur time.Duration) (ti *SimTimer) {
+func (c *SimClient) NewTimer(dur time.Duration) (ti *SimTimer) {
 	ti = &SimTimer{
 		isCli: true,
 	}
@@ -249,7 +263,7 @@ type SimTimer struct {
 // You must call ti.Discard() when done with it,
 // or the simulation will leak that memory. It
 // is recommended to defer ti.Discard immediately.
-func (s *Server) NewTimer(dur time.Duration) (ti *SimTimer) {
+func (s *SimServer) NewTimer(dur time.Duration) (ti *SimTimer) {
 	ti = &SimTimer{
 		isCli: false,
 	}
@@ -273,55 +287,17 @@ func (ti *SimTimer) Discard() (wasArmed bool) {
 	return
 }
 
-// Config provides control parameters.
+// SimNetConfig allows for future custom
+// settings of the gosimnet. The
+// NewSimNetConfig function should
+// be used to get an initial instance.
 type SimNetConfig struct {
-
-	// The barrier is the synctest.Wait call
-	// the lets the caller resume only when
-	// all other goro are durably blocked.
-	// (All goroutines in the simulation are/
-	// must be in the same bubble with the simnet).
-	//
-	// The barrier can only be used (or not) if faketime
-	// is also used, so this option will have
-	// no effect unless the simnet is run
-	// in a synctest.Wait bubble (using synctest.Run
-	// or synctest.Test, the upcomming rename).
-	//
-	// Under faketime, BarrierOff true means
-	// the scheduler will not wait to know
-	// for sure that it is the only active goroutine
-	// when doing its scheduling steps, such as firing
-	// new timers and matching sends and reads.
-	//
-	// This introduces more non-determinism --
-	// which provides more test coverage --
-	// but the tradeoff is that those tests are
-	// not reliably repeatable, since the
-	// Go runtime's goroutine interleaving order is
-	// randomized. The scheduler might take more
-	// steps than otherwise to deliver a
-	// message or to fire a timer, since we
-	// the scheduler can wake alongside us
-	// and become active.
-	//
-	// At the moment this can't happen in our simulation
-	// because the simnet controls all
-	// timers in rpc25519 tests, and so (unless we missed
-	// a real time.Sleep which we tried to purge)
-	// only the scheduler calls time.Sleep.
-	// However future tests and user code
-	// might call Sleep... we want to use
-	// cli/srv.U.Sleep() instead for more
-	// deterministic, repeatable tests whenever possible.
 	BarrierOff bool
 }
 
 // NewSimNetConfig should be called
 // to get an initial SimNetConfig to
-// set parameters.
+// set parameters and pass to NewSimNet().
 func NewSimNetConfig() *SimNetConfig {
 	return &SimNetConfig{}
 }
-
-type Config struct{}

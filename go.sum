@@ -1,6 +1,12 @@
+github.com/cristalhq/base64 v0.1.2 h1:edsefYyYDiac7Ytdh2xdaiiSSJzcI2f0yIkdGEf1qY0=
+github.com/cristalhq/base64 v0.1.2/go.mod h1:sy4+2Hale2KbtSqkzpdMeYTP/IrB+HCvxVHWsh2VSYk=
+github.com/glycerine/blake3 v1.5.2 h1:lE+WPREJhqdWt5/va+byQccckYQwN41Uu/K+u3KRxdE=
+github.com/glycerine/blake3 v1.5.2/go.mod h1:c/clAKPeDtoJM2aRKbbXWCOtgra+AlmsTD9z6EH7iYo=
 github.com/glycerine/idem v0.18.0 h1:rO6XWe8WtIppMWrrmUATMBsHsVbpmCr1hsQq0eK72uI=
 github.com/glycerine/idem v0.18.0/go.mod h1:gA9QRaEvbRow2nBLZRrTPV36h9VsZ31Kdz6e0iRVkSo=
 github.com/glycerine/one_tree_rwmut v1.0.0 h1:S9/US5QeXZVrXc/0tSUD58NAxKQY9CaezDcD7pwSVtI=
 github.com/glycerine/one_tree_rwmut v1.0.0/go.mod h1:eKKXEG3WkBtQOka9ANdHuIlhqNCc45NcDjBFaG/FMmU=
 github.com/glycerine/rbtree v0.2.1 h1:9nD5PDojW8gu1slYBzzH7VND9gbSjB86tusW5YRKghc=
 github.com/glycerine/rbtree v0.2.1/go.mod h1:skpUtSrm1HHyLo+HayukOvAmXtE/F6tsVW0uCpaBGWE=
+github.com/klauspost/cpuid/v2 v2.0.9 h1:lgaqFMSdTdQYdZ04uHyN2d/eKdOMyi2YLSvlQIBFYa4=
+github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
