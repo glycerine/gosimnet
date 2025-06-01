@@ -707,7 +707,7 @@ func (s *simnet) handleClientRegistration(reg *clientRegistration) {
 }
 
 // idempotent, all servers do this, then register through the same path.
-func (cfg *Config) bootSimNetOnServer(simNetConfig *Config, srv *Server) *simnet { // (tellServerNewConnCh chan *simconn) {
+func (cfg *Config) bootSimNetOnServer(simNetConfig *SimNetConfig, srv *Server) *simnet { // (tellServerNewConnCh chan *simconn) {
 
 	//vv("%v newSimNetOnServer top, goro = %v", srv.name, GoroNumber())
 	cfg.simnetRendezvous.singleSimnetMut.Lock()
@@ -3173,10 +3173,22 @@ func (s *simnet) NoisyNothing(oldval, newval bool) (swapped bool) {
 	return s.noisyNothing.CompareAndSwap(oldval, newval)
 }
 
-func (s *simnet) Close() {
+// upstream version
+func (s *simnet) Close() error {
 	//vv("simnet.Close() called.")
 	if s == nil || s.halt == nil {
-		return
+		return nil
 	}
 	s.halt.ReqStop.Close()
+	return nil
 }
+
+/*
+// Close shuts down the gosimnet network.
+func (s *SimNet) Close() error {
+	if s.simnetRendezvous != nil && s.simnetRendezvous.singleSimnet != nil {
+		return s.simnetRendezvous.singleSimnet.Close()
+	}
+	return nil
+}
+*/

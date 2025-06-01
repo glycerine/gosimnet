@@ -537,9 +537,6 @@ func (s *Server) Addr() (a net.Addr) {
 // RPC and peer/circuit must use Client.Start() as usual.
 func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
 
-	if !c.cfg.UseSimNet {
-		panic("Client.Dial is only for simnet.")
-	}
 	//vv("Client.DialSimnet called with local='%v', server='%v'", c.name, address)
 
 	// false => no read/send loops
@@ -554,4 +551,21 @@ func (c *Client) Dial(network, address string) (nc net.Conn, err error) {
 		return
 	}
 	return
+}
+
+// Close terminates the Server. Any blocked Accept
+// operations will be unblocked and return errors.
+func (s *Server) Close() error {
+	//vv("Server.Close() running")
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	if s.simnode == nil {
+		return nil // not an error to Close before we started.
+	}
+	s.simnet.alterNode(s.simnode, SHUTDOWN)
+	//vv("simnet.alterNode(s.simnode, SHUTDOWN) done for %v", s.name)
+	s.halt.ReqStop.Close()
+	// nobody else we need ack from, so don't hang on:
+	//<-s.halt.Done.Chan
+	return nil
 }
