@@ -62,7 +62,7 @@ func (c *Client) runSimNetClient(localHostPort, serverAddr string) (err error) {
 	}
 
 	select {
-	case <-registration.done:
+	case <-registration.proceed:
 	case <-c.simnet.halt.ReqStop.Chan:
 		return ErrShutdown()
 	case <-c.halt.ReqStop.Chan:

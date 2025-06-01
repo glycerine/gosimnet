@@ -14,18 +14,32 @@ import (
 
 func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNetConfig *SimNetConfig) {
 	//vv("top of runSimnetServer, serverAddr = '%v'; name='%v'", serverAddr, s.name)
-	defer func() {
-		r := recover()
-		//vv("defer running, end of runSimNetServer() for '%v' r='%v'", s.name, r)
-		s.halt.ReqStop.Close()
-		s.halt.Done.Close()
-		//vv("exiting Server.runSimNetServer('%v')", serverAddr) // seen, yes, on shutdown test.
-		if r != nil {
-			panic(r)
-		}
-	}()
+	// defer func() {
+	// 	r := recover()
+	// 	//vv("defer running, end of runSimNetServer() for '%v' r='%v'", s.name, r)
+	// 	s.halt.ReqStop.Close()
+	// 	s.halt.Done.Close()
+	// 	//vv("exiting Server.runSimNetServer('%v')", serverAddr) // seen, yes, on shutdown test.
+	// 	if r != nil {
+	// 		panic(r)
+	// 	}
+	// }()
 
-	simnet, serverNewConnCh, netAddr, err := s.bootAndRegisterSimNetServer(serverAddr, simNetConfig)
+	// satisfy uConn interface; don't crash cli/tests that check
+	netAddr := &SimNetAddr{network: "gosimnet", addr: serverAddr, name: s.name, isCli: false}
+	// avoid client/server races by giving userland test
+	// a copy of the address rather than the same.
+	cp := *netAddr
+	externalizedNetAddr := &cp
+
+	// idempotent, so all new servers can try;
+	// only the first will boot it up (still pass s for s.halt);
+	// second and subsequent will get back the
+	// cfg.simnetRendezvous.singleSimnet, which is a
+	// per config shared simnet.
+	simnet := s.net.bootSimNetOnServer(simNetConfig, s)
+
+	//simnet, serverNewConnCh, netAddr, err := s.net.bootAndRegisterSimNetServer(serverAddr, simNetConfig, s)
 	if err != nil {
 		return
 	}
@@ -60,9 +74,9 @@ func (s *Server) runSimNetServer(serverAddr string, boundCh chan net.Addr, simNe
 			//s.simnode = conn.local
 
 			//vv("%v simnet server got new conn '%#v', about to start read/send loops", netAddr, conn) // not seen
-			pair := s.newRWPair(conn)
-			go pair.runSendLoop(conn)
-			go pair.runReadLoop(conn)
+			//pair := s.newRWPair(conn)
+			//go pair.runSendLoop(conn)
+			//go pair.runReadLoop(conn)
 
 		case <-s.halt.ReqStop.Chan:
 			return
