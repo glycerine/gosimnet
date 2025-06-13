@@ -65,7 +65,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 					//vv("server exiting on '%v'", err)
 					return
 				}
-				vv("server lsn.Accept().")
+				//vv("server lsn.Accept().")
 				conn2mut.Lock()
 				if done {
 					conn2mut.Unlock()
@@ -74,25 +74,25 @@ func Test101_gosimnet_basics(t *testing.T) {
 				conn2 = append(conn2, c2)
 				conn2mut.Unlock()
 
-				vv("Accept on conn: local %v <-> %v remote", c2.LocalAddr(), c2.RemoteAddr())
+				//vv("Accept on conn: local %v <-> %v remote", c2.LocalAddr(), c2.RemoteAddr())
 				// per-client connection.
 				go func(c2 net.Conn) {
 					by := make([]byte, 1000)
 					for {
 						select {
 						case <-shutdown:
-							vv("server conn exiting on shutdown")
+							//vv("server conn exiting on shutdown")
 							return
 						default:
 						}
-						vv("server about to read on conn")
+						//vv("server about to read on conn")
 						n, err := c2.Read(by)
 						if err != nil {
 							vv("server conn exiting on Read error '%v'", err)
 							return
 						}
 						by = by[:n]
-						vv("echo server got '%v'", string(by))
+						//vv("echo server got '%v'", string(by))
 						// must end in \n or client will hang!
 						_, err = fmt.Fprintf(c2,
 							"hi back from echo server, I saw '%v'\n", string(by))
@@ -100,9 +100,9 @@ func Test101_gosimnet_basics(t *testing.T) {
 							vv("server conn exiting on Write error '%v'", err)
 							return
 						}
-						vv("server wrote echo. now close the conn to test our EOF sending")
+						//vv("server wrote echo. now close the conn to test our EOF sending")
 						c2.Close()
-						vv("server goro returning after single echo and conn.Clone")
+						//vv("server goro returning after single echo and conn.Clone")
 						break
 					} // end for
 
@@ -125,7 +125,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		if err != io.EOF {
 			panicOn(err)
 		}
-		vv("client sees response: '%v'", string(response))
+		//vv("client sees response: '%v'", string(response))
 		if got, want := string(response), `hi back from echo server, I saw 'hello gosimnet'
 `; got != want {
 			snap := network.GetSimnetSnapshot()

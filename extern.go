@@ -74,6 +74,11 @@ func (s *SimNet) NewSimClient(name string) (cli *SimClient, err error) {
 	//var rpcCli *rpc.Client
 	cloneCfg := *s.cfg
 
+	// do we have to wait until Dial so we have the
+	// server's address to contact? we might think it would
+	// be fine, but changing the config after submit is
+	// kind of tricky, so hold off until the Dial.
+	//
 	// rpcCli, err = rpc.NewClient(name, &cloneCfg)
 	// if err != nil {
 	// 	return
@@ -85,20 +90,19 @@ func (s *SimNet) NewSimClient(name string) (cli *SimClient, err error) {
 		//rpcCli: rpcCli,
 	}
 	return
-	// var cfg SimNetConfig
-	// if s.simNetCfg != nil {
-	// 	cfg = *s.simNetCfg
-	// }
-	// cli = &SimClient{
-	// 	net:       s,
-	// 	simNetCfg: &cfg,
-	// 	name:      name,
-	// 	simnet:    s.simnetRendezvous.singleSimnet,
-	// 	halt:      idem.NewHalter(),
-	// 	connected: make(chan error, 1),
-	// }
-	// cli.simnet.halt.AddChild(cli.halt)
-	//return
+}
+
+// Dial connects a Client to a Server.
+func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
+
+	//vv("Client.Dial called with local='%v', server='%v'", c.name, address)
+
+	c.cfg.ClientDialToHostPort = address
+	c.rpcCli, err = rpc.NewClient(c.name, c.cfg)
+	if err != nil {
+		return
+	}
+	return c.rpcCli.Dial(network, address)
 }
 
 // NewSimServer makes a new SimServer. Its name
@@ -113,28 +117,6 @@ func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 		cfg:    &cloneCfg,
 		rpcSrv: rpcSrv,
 	}
-
-	// var cfg SimNetConfig
-	// if s.simNetCfg != nil {
-	// 	cfg = *s.simNetCfg
-	// }
-	// srv = &SimServer{
-	// 	net:       s,
-	// 	simNetCfg: &cfg,
-	// 	name:      name,
-	// 	halt:      idem.NewHalter(),
-	// 	boundCh:   make(chan net.Addr, 1),
-	// }
-
-	// We can't add link up the halters yet, do it
-	// in simnet_server.go, runSimNetServer();
-	// we lazily boot up the network when
-	// the first server in it is brought up
-	// so the gosimnet doesn't really exist
-	// until then.
-	//
-	//srv.simnet.halt.AddChild(srv.halt)
-
 	return
 }
 
@@ -145,17 +127,6 @@ type SimServer struct {
 	cfg    *rpc.Config
 	name   string
 	rpcSrv *rpc.Server
-
-	// mut                sync.Mutex
-	// simNetCfg          *SimNetConfig
-	// net                *SimNet
-	// name               string
-	// halt               *idem.Halter
-	// simnode            *simnode
-	// simnet             *simnet
-	// boundCh            chan net.Addr
-	// simNetAddr         *SimNetAddr
-	// boundAddressString string
 }
 
 // SimNet holds a single gosimnet network.
@@ -166,13 +137,6 @@ type SimServer struct {
 type SimNet struct {
 	cfg *rpc.Config
 	net *rpc.Simnet
-
-	// simNetCfg        *SimNetConfig
-	// mut              sync.Mutex
-	// simnetRendezvous *simnetRendezvous
-	// localAddress     string
-
-	//ClientDialToHostPort string
 }
 
 func (s *SimNet) GetSimnetSnapshot() (snap *rpc.SimnetSnapshot) {
@@ -236,29 +200,6 @@ func (s *SimClient) AlterNode(alter Alteration) {
 }
 */
 
-// Dial connects a Client to a Server.
-func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
-
-	//vv("Client.Dial called with local='%v', server='%v'", c.name, address)
-
-	c.cfg.ClientDialToHostPort = address
-	c.rpcCli, err = rpc.NewClient(c.name, c.cfg)
-	if err != nil {
-		return
-	}
-
-	return c.rpcCli.Dial(network, address)
-
-	// no rcpCli.Start()! this will start read/send loops,
-	// which will compete badly with user code doing Read/Write.
-	//err = c.rpcCli.Start()
-	// if err != nil {
-	// 	return
-	// }
-	//
-	// return c.rpcCli.GetSimconn()
-}
-
 // Close terminates the Client,
 // moving it to SHUTDOWN state.
 func (s *SimClient) Close() error {
@@ -290,32 +231,7 @@ func (c *SimClient) RemoteAddr() string {
 // is recommended to defer ti.Discard immediately.
 func (c *SimClient) NewTimer(dur time.Duration) (ti *rpc.SimTimer) {
 	return c.rpcCli.NewTimer(dur)
-
-	// ti = &SimTimer{
-	// 	isCli: true,
-	// }
-	// ti.simnet = c.simnet
-	// ti.simnode = c.simnode
-	// ti.simtimer = c.simnet.createNewTimer(c.simnode, dur, time.Now(), true) // isCli
-	// ti.C = ti.simtimer.timerC
-	// return
 }
-
-// SimTimer mocks the Go time.Timer object.
-// Unlike Go timers, however, you must
-// arrange to call Timer.Discard() when
-// you are finished with the Timer.
-// At the moment, Reset() is not implemented.
-// Simply Discard the old Timer and create
-// another using NewTimer.
-/*type SimTimer struct {
-	gotimer  *time.Timer
-	isCli    bool
-	simnode  *simnode
-	simnet   *simnet
-	simtimer *mop
-	C        <-chan time.Time
-}*/
 
 // NewTimer makes a new Timer on the given Server.
 // You must call ti.Discard() when done with it,
@@ -323,39 +239,7 @@ func (c *SimClient) NewTimer(dur time.Duration) (ti *rpc.SimTimer) {
 // is recommended to defer ti.Discard immediately.
 func (s *SimServer) NewTimer(dur time.Duration) (ti *rpc.SimTimer) {
 	return s.rpcSrv.NewTimer(dur)
-
-	// ti = &SimTimer{
-	// 	isCli: false,
-	// }
-	// ti.simnet = s.simnet
-	// ti.simnode = s.simnode
-	// ti.simtimer = s.simnet.createNewTimer(s.simnode, dur, time.Now(), false) // isCli
-	// ti.C = ti.simtimer.timerC
-	// return
 }
-
-/*
-// Discard allows the gosimnet scheduler
-// to dispose of an unneeded Timer. This
-// is important to do manually in user code.
-// Unlike the Go runtime, we do not have
-// a garbage collector to clean up for us.
-func (ti *SimTimer) Discard() (wasArmed bool) {
-	if ti.simnet == nil {
-		return
-	}
-	wasArmed = ti.simnet.discardTimer(ti.simnode, ti.simtimer, time.Now())
-	return
-}
-*/
-
-// // SimNetConfig allows for future custom
-// // settings of the gosimnet. The
-// // NewSimNetConfig function should
-// // be used to get an initial instance.
-// type SimNetConfig struct {
-// 	BarrierOff bool
-// }
 
 // NewSimNetConfig should be called
 // to get an initial SimNetConfig to
@@ -368,40 +252,11 @@ func NewSimNetConfig() *rpc.Config {
 // which are there to match the net.Listen method.
 // The addr will be the name set on NewServer(name).
 func (s *SimServer) Listen(network, addr string) (lsn net.Listener, err error) {
-
 	return s.rpcSrv.Listen(network, addr)
-
-	// // start the server, first server boots the network,
-	// // but it can continue even if the server is shutdown.
-	// addrCh := make(chan net.Addr, 1)
-	// s.runSimNetServer(s.name, addrCh, s.simNetCfg)
-	// lsn = s
-	// var netAddr *SimNetAddr
-	// select {
-	// case netAddrI := <-addrCh:
-	// 	netAddr = netAddrI.(*SimNetAddr)
-	// case <-s.halt.ReqStop.Chan:
-	// 	err = ErrShutdown()
-	// }
-	// _ = netAddr
-	// return
 }
 
 // Close terminates the Server. Any blocked Accept
 // operations will be unblocked and return errors.
 func (s *SimServer) Close() error {
 	return s.rpcSrv.Close()
-
-	//vv("Server.Close() running")
-	// s.mut.Lock()
-	// defer s.mut.Unlock()
-	// if s.simnode == nil {
-	// 	return nil // not an error to Close before we started.
-	// }
-	// s.simnet.alterNode(s.simnode, SHUTDOWN)
-	// //vv("simnet.alterNode(s.simnode, SHUTDOWN) done for %v", s.name)
-	// s.halt.ReqStop.Close()
-	// // nobody else we need ack from, so don't hang on:
-	// //<-s.halt.Done.Chan
-	// return nil
 }
