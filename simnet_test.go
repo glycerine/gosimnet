@@ -126,6 +126,9 @@ func Test101_gosimnet_basics(t *testing.T) {
 		vv("client sees response: '%v'", string(response))
 		if got, want := string(response), `hi back from echo server, I saw 'hello gosimnet'
 `; got != want {
+			snap := network.GetSimnetSnapshot()
+			vv("snap = '%v'", snap.LongString())
+
 			panic(fmt.Sprintf("error: want '%v' but got '%v'", want, got))
 		}
 
