@@ -81,27 +81,29 @@ func Test101_gosimnet_basics(t *testing.T) {
 					for {
 						select {
 						case <-shutdown:
-							//vv("server conn exiting on shutdown")
+							vv("server conn exiting on shutdown")
 							return
 						default:
 						}
 						vv("server about to read on conn")
 						n, err := c2.Read(by)
 						if err != nil {
-							//vv("server conn exiting on Read error '%v'", err)
+							vv("server conn exiting on Read error '%v'", err)
 							return
 						}
 						by = by[:n]
-						//vv("echo server got '%v'", string(by))
+						vv("echo server got '%v'", string(by))
 						// must end in \n or client will hang!
 						_, err = fmt.Fprintf(c2,
 							"hi back from echo server, I saw '%v'\n", string(by))
 						if err != nil {
-							//vv("server conn exiting on Write error '%v'", err)
+							vv("server conn exiting on Write error '%v'", err)
 							return
 						}
-						// close the conn to test our EOF sending
+						vv("server wrote echo. now close the conn to test our EOF sending")
 						c2.Close()
+						vv("server goro returning after single echo and conn.Clone")
+						break
 					} // end for
 
 				}(c2)

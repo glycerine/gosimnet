@@ -178,15 +178,18 @@ type SimNet struct {
 func (s *SimNet) GetSimnetSnapshot() (snap *rpc.SimnetSnapshot) {
 	if s.net == nil {
 		s.net = s.cfg.GetSimnet()
-		if s.net == nil {
-			return nil
-		}
 	}
-	return s.net.GetSimnetSnapshot()
+	if s.net != nil {
+		return s.net.GetSimnetSnapshot()
+	}
+	return nil
 }
 
 // Close shuts down the gosimnet network.
 func (s *SimNet) Close() error {
+	if s.net == nil {
+		s.net = s.cfg.GetSimnet()
+	}
 	if s.net != nil {
 		s.net.Close()
 	}
