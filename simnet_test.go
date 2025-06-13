@@ -107,7 +107,8 @@ func Test101_gosimnet_basics(t *testing.T) {
 			} // end for
 		}() // end server
 
-		cli := network.NewSimClient("cli_" + t.Name())
+		cli, err := network.NewSimClient("cli_" + t.Name())
+		panicOn(err)
 		defer cli.Close()
 
 		//vv("cli about to Dial")
