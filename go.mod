@@ -5,9 +5,10 @@ go 1.24.3
 require (
 	github.com/glycerine/idem v0.20.4
 	github.com/glycerine/rbtree v0.2.1
+	github.com/glycerine/rpc25519 v1.22.64	
 )
 
-replace github.com/glycerine/rpc25519 => ../rpc25519
+//replace github.com/glycerine/rpc25519 => ../rpc25519
 
 require (
 	4d63.com/embedfiles v0.0.0-20190311033909-995e0740726f // indirect
@@ -21,7 +22,6 @@ require (
 	github.com/glycerine/ipaddr v0.2.7 // indirect
 	github.com/glycerine/loquet v0.0.19 // indirect
 	github.com/glycerine/one_tree_rwmut v1.0.0 // indirect
-	github.com/glycerine/rpc25519 v1.22.63 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
