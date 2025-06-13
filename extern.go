@@ -17,7 +17,7 @@ type SimClient struct {
 }
 
 // NewClient makes a new Client. Its name
-// will double as its network address.
+// doubles as its network address.
 func (s *SimNet) NewSimClient(name string) (cli *SimClient, err error) {
 
 	cloneCfg := *s.cfg
@@ -55,7 +55,7 @@ func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
 }
 
 // NewSimServer makes a new SimServer. Its name
-// will double as its network address.
+// doubles as its network address.
 func (s *SimNet) NewSimServer(name string) (srv *SimServer) {
 
 	cloneCfg := *s.cfg
@@ -95,6 +95,20 @@ type SimServer struct {
 type SimNet struct {
 	cfg *rpc.Config
 	net *rpc.Simnet
+}
+
+// GetRpcSimnet gives access to the network
+// modeling and fault-inject and snapshot API's
+// from the underlying rpc25519 Simnet.
+// Due to the lazy simnet instantiation,
+// we must return nil until the first Server is
+// started/listening on a socket, since
+// before that there is no Simnet to return.
+func (s *SimNet) GetRpcSimnet() *rpc.Simnet {
+	if s.net == nil {
+		s.net = s.cfg.GetSimnet()
+	}
+	return s.net // might still be nil.
 }
 
 func (s *SimNet) GetSimnetSnapshot() (snap *rpc.SimnetSnapshot) {
