@@ -38,7 +38,7 @@ https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
 https://github.com/glycerine/rpc25519/blob/master/simgrid_test.go
 
-Other limitations
+A potentially suprising aspect
 
 Network connection endpoints ("addresses")
 at the moment are kept as simple as 
@@ -51,6 +51,10 @@ a string like "127.0.0.1:8080", or even
 let it be a whole URL. The system
 does not care what the endpoint string is,
 only that each endpoint has a unique name.
+
+You must ensure this uniqueness across all
+network nodes. Beyond that, the name can
+be anything that makes your modeling easier.
 
 Thus there is no need to emuate DNS to get
 human readable addressing, and no network
