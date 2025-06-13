@@ -65,6 +65,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 					//vv("server exiting on '%v'", err)
 					return
 				}
+				vv("server lsn.Accept().")
 				conn2mut.Lock()
 				if done {
 					conn2mut.Unlock()
@@ -73,7 +74,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 				conn2 = append(conn2, c2)
 				conn2mut.Unlock()
 
-				//vv("Accept on conn: local %v <-> %v remote", c2.LocalAddr(), c2.RemoteAddr())
+				vv("Accept on conn: local %v <-> %v remote", c2.LocalAddr(), c2.RemoteAddr())
 				// per-client connection.
 				go func(c2 net.Conn) {
 					by := make([]byte, 1000)
@@ -84,7 +85,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 							return
 						default:
 						}
-						//vv("server about to read on conn")
+						vv("server about to read on conn")
 						n, err := c2.Read(by)
 						if err != nil {
 							//vv("server conn exiting on Read error '%v'", err)
@@ -119,11 +120,13 @@ func Test101_gosimnet_basics(t *testing.T) {
 
 		fmt.Fprintf(conn, "hello gosimnet")
 		response, err := bufio.NewReader(conn).ReadString('\n')
-		panicOn(err)
-		//vv("client sees response: '%v'", string(response))
+		if err != io.EOF {
+			panicOn(err)
+		}
+		vv("client sees response: '%v'", string(response))
 		if got, want := string(response), `hi back from echo server, I saw 'hello gosimnet'
 `; got != want {
-			t.Fatalf("error: want '%v' but got '%v'", want, got)
+			panic(fmt.Sprintf("error: want '%v' but got '%v'", want, got))
 		}
 
 		// reading more should get EOF, since server now closes the file.
