@@ -1,49 +1,11 @@
 package gosimnet
 
 import (
-	//"fmt"
 	"net"
-	//"sync"
 	"time"
 
-	//"github.com/glycerine/idem"
 	rpc "github.com/glycerine/rpc25519"
 )
-
-const (
-	// UserMaxPayload is the maximum size in bytes
-	// for network messages. This does not restrict
-	// the user from doing io.Copy() to send a larger
-	// stream, of course. It is mostly an internal net.Conn
-	// implementation detail, but being aware of it
-	// may allow user code to optimize their Writes.
-	// For larger sends, simply make multipe net.Conn.Write calls,
-	// advancing the slice by the returned written count
-	// each time; or, as above, wrap your slice in a bytes.Buffer
-	// and use io.Copy().
-	UserMaxPayload = rpc.UserMaxPayload // 1_200_000 bytes, at this writing.
-)
-
-var lastSerialPrivate int64
-
-// ErrShutdown2 is returned when the
-// network or node goes down in the
-// middle of an operation.
-//var ErrShutdown2 = fmt.Errorf("shutting down")
-//var ErrShutdown2 = rpc.ErrShutdown2
-
-// ErrShutdown returns ErrShutdown2. It
-// is function to make it easy to diagnose
-// where the error came from, if need be.
-//func ErrShutdown() error {
-//	return ErrShutdown2
-//}
-
-/*type localRemoteAddr interface {
-	RemoteAddr() net.Addr
-	LocalAddr() net.Addr
-}
-*/
 
 // SimClient simulates a network
 // client that can Dial out
@@ -52,26 +14,12 @@ type SimClient struct {
 	name   string
 	cfg    *rpc.Config
 	rpcCli *rpc.Client
-
-	// mut       sync.Mutex
-	// net       *SimNet
-	// simNetCfg *SimNetConfig
-	// name      string
-	// halt      *idem.Halter
-	// simnode   *simnode
-	// simnet    *simnet
-
-	// simconn *simnetConn
-	// conn    *simnetConn
-
-	// connected chan error
 }
 
 // NewClient makes a new Client. Its name
 // will double as its network address.
 func (s *SimNet) NewSimClient(name string) (cli *SimClient, err error) {
 
-	//var rpcCli *rpc.Client
 	cloneCfg := *s.cfg
 
 	// do we have to wait until Dial so we have the
@@ -79,6 +27,7 @@ func (s *SimNet) NewSimClient(name string) (cli *SimClient, err error) {
 	// be fine, but changing the config after submit is
 	// kind of tricky, so hold off until the Dial.
 	//
+	// var rpcCli *rpc.Client
 	// rpcCli, err = rpc.NewClient(name, &cloneCfg)
 	// if err != nil {
 	// 	return
@@ -134,6 +83,15 @@ type SimServer struct {
 // be created from the same instance of SimNet,
 // which they will use to rendezvous; in
 // addition to their addresses (names).
+//
+// Note: the actual rpc.Simnet creation is
+// lazy, since it is tied to the rpc.Server.Start
+// process.
+// Hence the SimNet will only really be available
+// for network/fault modeling after the first
+// NewServer() has returned from its first Server Listen
+// (i.e. Start) call.
+// Then GetSimnetSnapshot etc should succeed.
 type SimNet struct {
 	cfg *rpc.Config
 	net *rpc.Simnet
@@ -165,6 +123,14 @@ func (s *SimNet) Close() error {
 // Clients and Servers from
 // different SimNet can never see or
 // hear from each other.
+//
+// Note: the actual rpc.Simnet creation is
+// lazy, since it is tied to the rpc.Server.Start
+// process.
+// Hence the SimNet will only really be available
+// for network/fault modeling after the first
+// NewServer() has returned from its first Server Listen
+// (i.e. Start) call.
 func NewSimNet(config *rpc.Config) (n *SimNet) {
 
 	var cfg *rpc.Config
@@ -181,24 +147,6 @@ func NewSimNet(config *rpc.Config) (n *SimNet) {
 	}
 	return
 }
-
-/*
-// AlterNode lets you simulate network and
-// server node failures.
-// The alter setting can be one of SHUTDOWN,
-// PARTITION, UNPARTITION, RESTART.
-func (s *SimServer) AlterNode(alter Alteration) {
-	s.simnet.alterNode(s.simnode, alter)
-}
-
-// AlterNode lets you simulate network and
-// client node failures.
-// The alter setting can be one of SHUTDOWN,
-// PARTITION, UNPARTITION, RESTART.
-func (s *SimClient) AlterNode(alter Alteration) {
-	s.simnet.alterNode(s.simnode, alter)
-}
-*/
 
 // Close terminates the Client,
 // moving it to SHUTDOWN state.
