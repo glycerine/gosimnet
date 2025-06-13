@@ -247,12 +247,16 @@ func (c *SimClient) Dial(network, address string) (nc net.Conn, err error) {
 		return
 	}
 
-	err = c.rpcCli.Start()
-	if err != nil {
-		return
-	}
+	return c.rpcCli.Dial(network, address)
 
-	return c.rpcCli.GetSimconn()
+	// no rcpCli.Start()! this will start read/send loops,
+	// which will compete badly with user code doing Read/Write.
+	//err = c.rpcCli.Start()
+	// if err != nil {
+	// 	return
+	// }
+	//
+	// return c.rpcCli.GetSimconn()
 }
 
 // Close terminates the Client,
