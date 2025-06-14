@@ -45,7 +45,40 @@ You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...
 (from go doc)
 
 ~~~
-func (s *Simnet) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool) (err error)
+type DropDeafSpec struct {
+
+	// false UpdateDeafReads means no change to deafRead
+	// probability. The DeafReadsNewProb field is ignored.
+	// This allows setting DeafReadsNewProb to 0 only
+	// when you want to.
+	UpdateDeafReads bool
+
+	// probability of ignoring (being deaf) to a read.
+	// 0 => never be deaf to a read (healthy).
+	// 1 => ignore all reads (dead hardware).
+	DeafReadsNewProb float64
+
+	// false UpdateDropSends means the DropSendsNewProb
+	// is ignored, and there is no change to the dropSend
+	// probability.
+	UpdateDropSends bool
+
+	// probability of dropping a send.
+	// 0 => never drop a send (healthy).
+	// 1 => always drop a send (dead hardware).
+	DropSendsNewProb float64
+}
+
+    DropDeafSpec specifies a network/netcard 
+    fault with a given probability.
+
+
+
+func (s *Simnet) AllHealthy(
+    powerOnIfOff bool, 
+    deliverDroppedSends bool,
+    ) (err error)
+    
     AllHealthy heal all partitions, undo all faults, 
     network wide. All circuits
     are returned to HEALTHY status. Their powerOff 
@@ -54,9 +87,17 @@ func (s *Simnet) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool) (err er
     for single simnode repair.
     .
 
-func (s *Simnet) AlterCircuit(simnodeName string, alter Alteration, wholeHost bool) (undo Alteration, err error)
+func (s *Simnet) AlterCircuit(
+     simnodeName string, 
+     alter Alteration, 
+     wholeHost bool,
+     ) (undo Alteration, err error)
 
-func (s *Simnet) AlterHost(simnodeName string, alter Alteration) (undo Alteration, err error)
+func (s *Simnet) AlterHost(
+     simnodeName string, 
+     alter Alteration,
+     ) (undo Alteration, err error)
+     
     we cannot guarantee that the undo will
     reverse all the changes if fine
     grained faults are in place; e.g. if only 
@@ -68,21 +109,37 @@ func (s *Simnet) AlterHost(simnodeName string, alter Alteration) (undo Alteratio
 
 func (s *Simnet) Close()
 
-func (s *Simnet) FaultCircuit(origin, target string, dd DropDeafSpec, deliverDroppedSends bool) (err error)
+func (s *Simnet) FaultCircuit(
+    origin, target string, 
+    dd DropDeafSpec, 
+    deliverDroppedSends bool,
+    ) (err error)
+    
     empty string target means all possible targets
 
-func (s *Simnet) FaultHost(hostName string, dd DropDeafSpec, deliverDroppedSends bool) (err error)
+func (s *Simnet) FaultHost(
+     hostName string, 
+     dd DropDeafSpec, 
+     deliverDroppedSends bool,
+     ) (err error)
 
 func (s *Simnet) GetSimnetSnapshot() (snap *SimnetSnapshot)
 
 func (s *Simnet) NewSimnetBatch(subwhen time.Time, subAsap bool) *SimnetBatch
 
 func (s *Simnet) NoisyNothing(oldval, newval bool) (swapped bool)
+
     NoisyNothing makes simnet print/log if it 
     appears to have nothing to do at
     the end of each scheduling loop.
 
-func (s *Simnet) RepairCircuit(originName string, unIsolate bool, powerOnIfOff, deliverDroppedSends bool) (err error)
+func (s *Simnet) RepairCircuit(
+     originName string, 
+     unIsolate bool, 
+     powerOnIfOff bool, 
+     deliverDroppedSends bool,
+     ) (err error)
+     
     RepairCircuit restores the local 
     circuit to full working order.
     It undoes the effects of prior deafDrop 
@@ -91,7 +148,14 @@ func (s *Simnet) RepairCircuit(originName string, unIsolate bool, powerOnIfOff, 
     unIsolate is also true. See also
     RepairHost, AllHealthy. .
 
-func (s *Simnet) RepairHost(originName string, unIsolate bool, powerOnIfOff, allHosts, deliverDroppedSends bool) (err error)
+func (s *Simnet) RepairHost(
+     originName string, 
+     unIsolate bool, 
+     powerOnIfOff bool, 
+     allHosts bool, 
+     deliverDroppedSends bool,
+     ) (err error)
+     
     RepairHost repairs all the circuits on the host.
 
 func (s *Simnet) Start()
@@ -110,11 +174,21 @@ type SimnetBatch struct {
     Currently a prototype; not really
     finished/tested yet.
 
-func (b *SimnetBatch) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool)
+func (b *SimnetBatch) AllHealthy(
+    powerOnIfOff bool, 
+    deliverDroppedSends bool)
 
-func (b *SimnetBatch) AlterCircuit(simnodeName string, alter Alteration, wholeHost bool)
+func (b *SimnetBatch) AlterCircuit(
+    simnodeName string, 
+    alter Alteration, 
+    wholeHost bool,
+    )
 
-func (b *SimnetBatch) AlterHost(simnodeName string, alter Alteration)
+func (b *SimnetBatch) AlterHost(
+     simnodeName string, 
+     alter Alteration,
+     )
+
     we cannot guarantee that the undo 
     will reverse all the changes if fine
     grained faults are in place; e.g. if 
@@ -124,16 +198,38 @@ func (b *SimnetBatch) AlterHost(simnodeName string, alter Alteration)
     The undo is still very useful for tests 
     even without that guarantee.
 
-func (b *SimnetBatch) FaultCircuit(origin, target string, dd DropDeafSpec, deliverDroppedSends bool)
+func (b *SimnetBatch) FaultCircuit(
+     origin string, 
+     target string, 
+     dd DropDeafSpec, 
+     deliverDroppedSends bool,
+     )
+     
     empty string target means all possible targets
 
-func (b *SimnetBatch) FaultHost(hostName string, dd DropDeafSpec, deliverDroppedSends bool)
+func (b *SimnetBatch) FaultHost(
+    hostName string, 
+    dd DropDeafSpec, 
+    deliverDroppedSends bool,
+    )
 
 func (b *SimnetBatch) GetSimnetSnapshot()
 
-func (b *SimnetBatch) RepairCircuit(originName string, unIsolate bool, powerOnIfOff, deliverDroppedSends bool)
+func (b *SimnetBatch) RepairCircuit(
+     originName string, 
+     unIsolate bool, 
+     powerOnIfOff bool, 
+     deliverDroppedSends bool,
+     )
 
-func (b *SimnetBatch) RepairHost(originName string, unIsolate bool, powerOnIfOff, allHosts, deliverDroppedSends bool)
+func (b *SimnetBatch) RepairHost(
+     originName string, 
+     unIsolate bool, 
+     powerOnIfOff bool, 
+     allHosts bool, 
+     deliverDroppedSends bool,
+     )
+     
     RepairHost repairs all the circuits on the host.
 
 type SimnetConnSummary struct {
@@ -217,12 +313,16 @@ type SimnetSnapshot struct {
 
 func (z *SimnetSnapshot) LongString() (r string)
 
+    LongString provides all the details 
+    even when the network is all healthy.
+
 func (z *SimnetSnapshot) ShortString() (r string)
     ShortString: if everything is healthy, just give a short summary. Otherwise
     give the full snapshot.
 
 func (z *SimnetSnapshot) String() (r string)
-    String: if everything is healthy, just give a short summary. Otherwise give
+    String: if everything is healthy, 
+    just give a short summary. Otherwise give
     the full snapshot.
 
 func (snap *SimnetSnapshot) ToFile(nm string)
