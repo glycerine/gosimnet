@@ -38,9 +38,11 @@ https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
 https://github.com/glycerine/rpc25519/blob/master/simgrid_test.go
 
-# API summary
+# network modeling API summary
 
-from go doc:
+You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...
+
+(from go doc)
 
 ~~~
 func (s *Simnet) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool) (err error)
