@@ -38,7 +38,201 @@ https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
 https://github.com/glycerine/rpc25519/blob/master/simgrid_test.go
 
-A potentially suprising aspect
+# API summary
+
+from go doc:
+
+~~~
+func (s *Simnet) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool) (err error)
+    AllHealthy heal all partitions, undo all faults, 
+    network wide. All circuits
+    are returned to HEALTHY status. Their powerOff 
+    status is not updated unless
+    powerOnIfOff is also true. See also RepairSimnode 
+    for single simnode repair.
+    .
+
+func (s *Simnet) AlterCircuit(simnodeName string, alter Alteration, wholeHost bool) (undo Alteration, err error)
+
+func (s *Simnet) AlterHost(simnodeName string, alter Alteration) (undo Alteration, err error)
+    we cannot guarantee that the undo will
+    reverse all the changes if fine
+    grained faults are in place; e.g. if only 
+    one auto-cli was down and we
+    shutdown the host, the undo of restart 
+    will also bring up that auto-cli too.
+    The undo is still very useful for tests 
+    even without that guarantee.
+
+func (s *Simnet) Close()
+
+func (s *Simnet) FaultCircuit(origin, target string, dd DropDeafSpec, deliverDroppedSends bool) (err error)
+    empty string target means all possible targets
+
+func (s *Simnet) FaultHost(hostName string, dd DropDeafSpec, deliverDroppedSends bool) (err error)
+
+func (s *Simnet) GetSimnetSnapshot() (snap *SimnetSnapshot)
+
+func (s *Simnet) NewSimnetBatch(subwhen time.Time, subAsap bool) *SimnetBatch
+
+func (s *Simnet) NoisyNothing(oldval, newval bool) (swapped bool)
+    NoisyNothing makes simnet print/log if it 
+    appears to have nothing to do at
+    the end of each scheduling loop.
+
+func (s *Simnet) RepairCircuit(originName string, unIsolate bool, powerOnIfOff, deliverDroppedSends bool) (err error)
+    RepairCircuit restores the local 
+    circuit to full working order.
+    It undoes the effects of prior deafDrop 
+    actions, if any. It does not change
+    an isolated simnode's isolation unless 
+    unIsolate is also true. See also
+    RepairHost, AllHealthy. .
+
+func (s *Simnet) RepairHost(originName string, unIsolate bool, powerOnIfOff, allHosts, deliverDroppedSends bool) (err error)
+    RepairHost repairs all the circuits on the host.
+
+func (s *Simnet) Start()
+
+func (s *Simnet) String() (r string)
+
+func (s *Simnet) SubmitBatch(batch *SimnetBatch)
+    SubmitBatch does not block.
+
+type SimnetBatch struct {
+	// Has unexported fields.
+}
+    SimnetBatch is a proposed design for 
+    sending in a batch of network
+    fault/repair/config changes at once. 
+    Currently a prototype; not really
+    finished/tested yet.
+
+func (b *SimnetBatch) AllHealthy(powerOnIfOff bool, deliverDroppedSends bool)
+
+func (b *SimnetBatch) AlterCircuit(simnodeName string, alter Alteration, wholeHost bool)
+
+func (b *SimnetBatch) AlterHost(simnodeName string, alter Alteration)
+    we cannot guarantee that the undo 
+    will reverse all the changes if fine
+    grained faults are in place; e.g. if 
+    only one auto-cli was down and we
+    shutdown the host, the undo of restart 
+    will also bring up that auto-cli too.
+    The undo is still very useful for tests 
+    even without that guarantee.
+
+func (b *SimnetBatch) FaultCircuit(origin, target string, dd DropDeafSpec, deliverDroppedSends bool)
+    empty string target means all possible targets
+
+func (b *SimnetBatch) FaultHost(hostName string, dd DropDeafSpec, deliverDroppedSends bool)
+
+func (b *SimnetBatch) GetSimnetSnapshot()
+
+func (b *SimnetBatch) RepairCircuit(originName string, unIsolate bool, powerOnIfOff, deliverDroppedSends bool)
+
+func (b *SimnetBatch) RepairHost(originName string, unIsolate bool, powerOnIfOff, allHosts, deliverDroppedSends bool)
+    RepairHost repairs all the circuits on the host.
+
+type SimnetConnSummary struct {
+	OriginIsCli      bool
+	Origin           string
+	OriginState      Faultstate
+	OriginConnClosed bool
+	OriginPoweroff   bool
+	Target           string
+	TargetState      Faultstate
+	TargetConnClosed bool
+	TargetPoweroff   bool
+	DropSendProb     float64
+	DeafReadProb     float64
+
+	// origin Q summary
+	Qs string
+
+	// origin priority queues:
+	// Qs is the convenient/already stringified form of
+	// these origin queues.
+	// These allow stronger test assertions.  They are deep clones
+	// and so mostly race free except for the
+	// pointers mop.{origin,target,origTimerMop,msg,sendmop,readmop},
+	// access those only after the simnet has been shutdown.
+	// The proceed channel is always nil.
+	DroppedSendQ *pq
+	DeafReadQ    *pq
+	ReadQ        *pq
+	PreArrQ      *pq
+	TimerQ       *pq
+}
+
+func (z *SimnetConnSummary) String() (r string)
+
+type SimnetPeerStatus struct {
+	Name         string
+	Conn         []*SimnetConnSummary
+	Connmap      map[string]*SimnetConnSummary
+	ServerState  Faultstate
+	Poweroff     bool
+	LC           int64
+	ServerBaseID string
+	IsLoneCli    bool // and not really a peer server with auto-cli
+}
+
+func (z *SimnetPeerStatus) String() (r string)
+
+type SimnetSnapshot struct {
+	Asof               time.Time
+	Loopi              int64
+	NetClosed          bool
+	GetSimnetStatusErr error
+	Cfg                SimNetConfig
+	PeerConnCount      int
+	LoneCliConnCount   int
+
+	// mop creation/finish data.
+	Xcountsn  int64       // number of mop issued
+	Xfinorder []int64     // finish order (nextMopSn at time of finish)
+	Xwhence   []string    // file:line creation place
+	Xkind     []mopkind   // send,read,timer,discard,...
+	Xissuetm  []time.Time // when issued
+	Xfintm    []time.Time // when finished
+	Xwho      []int
+
+	Xhash string // hash of the sequence
+
+	ScenarioNum    int
+	ScenarioSeed   [32]byte
+	ScenarioTick   time.Duration
+	ScenarioMinHop time.Duration
+	ScenarioMaxHop time.Duration
+
+	Peer    []*SimnetPeerStatus
+	Peermap map[string]*SimnetPeerStatus
+	LoneCli map[string]*SimnetPeerStatus // not really a peer but meh.
+
+	// Has unexported fields.
+}
+
+func (z *SimnetSnapshot) LongString() (r string)
+
+func (z *SimnetSnapshot) ShortString() (r string)
+    ShortString: if everything is healthy, just give a short summary. Otherwise
+    give the full snapshot.
+
+func (z *SimnetSnapshot) String() (r string)
+    String: if everything is healthy, just give a short summary. Otherwise give
+    the full snapshot.
+
+func (snap *SimnetSnapshot) ToFile(nm string)
+
+type SimnetSnapshotter struct {
+	// Has unexported fields.
+}
+
+func (s *SimnetSnapshotter) GetSimnetSnapshot() *SimnetSnapshot
+~~~
+
+# naming -- suprisingly simple
 
 Network connection endpoints ("addresses")
 at the moment are kept as simple as 
