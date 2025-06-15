@@ -143,12 +143,6 @@ func (s *Simnet) GetSimnetSnapshot() (snap *SimnetSnapshot)
 
 func (s *Simnet) NewSimnetBatch(subwhen time.Time, subAsap bool) *SimnetBatch
 
-func (s *Simnet) NoisyNothing(oldval, newval bool) (swapped bool)
-
-    NoisyNothing makes simnet print/log if it 
-    appears to have nothing to do at
-    the end of each scheduling loop.
-
 func (s *Simnet) RepairCircuit(
      originName string, 
      unIsolate bool, 
@@ -174,9 +168,6 @@ func (s *Simnet) RepairHost(
      
     RepairHost repairs all the circuits on the host.
 
-func (s *Simnet) Start()
-
-func (s *Simnet) String() (r string)
 
 func (s *Simnet) SubmitBatch(batch *SimnetBatch)
     SubmitBatch does not block.
