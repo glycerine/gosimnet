@@ -101,25 +101,26 @@ type Faultstate int
     in powerOff.
 
 const (
-	HEALTHY Faultstate = 0
+    HEALTHY Faultstate = 0
 
-    // cruder than FAULTY. no comms with anyone else
-	ISOLATED Faultstate = 1 
+    // more coarse than FAULTY. no communications 
+    // with anyone else will happen.
+    ISOLATED Faultstate = 1 
 
-	// If a (deaf/drop) fault is applied 
+    // If a (deaf/drop) fault is applied 
     // to a HEALTHY circuit,
-	// then the circuit is marked FAULTY.
-	// If a repair removes the last fault, 
+    // then the circuit is marked FAULTY.
+    // If a repair removes the last fault, 
     // we change it back to HEALTHY.
-	FAULTY Faultstate = 2 // some conn may drop sends, be deaf to reads
+    FAULTY Faultstate = 2 // some conn may drop sends, be deaf to reads
 
-	// If a (deaf/drop) fault is 
+    // If a (deaf/drop) fault is 
     // applied to an ISOLATED circuit,
-	// then the circuit is marked 
+    // then the circuit is marked 
     // FAULTY_ISOLATED. If a reapir removes 
     // the last fault, we change it 
     // back to ISOLATED.
-	FAULTY_ISOLATED Faultstate = 3
+    FAULTY_ISOLATED Faultstate = 3
 )
 
 
@@ -131,36 +132,36 @@ type Alteration int
     specific network simnode.
 
 const (
-	UNDEFINED Alteration = 0
-	SHUTDOWN  Alteration = 1
-	POWERON   Alteration = 2
-	ISOLATE   Alteration = 3
-	UNISOLATE Alteration = 4
+    UNDEFINED Alteration = 0
+    SHUTDOWN  Alteration = 1
+    POWERON   Alteration = 2
+    ISOLATE   Alteration = 3
+    UNISOLATE Alteration = 4
 )
 
 
 type DropDeafSpec struct {
 
-	// false UpdateDeafReads means no change to deafRead
-	// probability. The DeafReadsNewProb field is ignored.
-	// This allows setting DeafReadsNewProb to 0 only
-	// when you want to.
-	UpdateDeafReads bool
+    // false UpdateDeafReads means no change to deafRead
+    // probability. The DeafReadsNewProb field is ignored.
+    // This allows setting DeafReadsNewProb to 0 only
+    // when you want to.
+    UpdateDeafReads bool
 
-	// probability of ignoring (being deaf) to a read.
-	// 0 => never be deaf to a read (healthy).
-	// 1 => ignore all reads (dead hardware).
-	DeafReadsNewProb float64
+    // probability of ignoring (being deaf) to a read.
+    // 0 => never be deaf to a read (healthy).
+    // 1 => ignore all reads (dead hardware).
+    DeafReadsNewProb float64
 
-	// false UpdateDropSends means the DropSendsNewProb
-	// is ignored, and there is no change to the dropSend
-	// probability.
-	UpdateDropSends bool
+    // false UpdateDropSends means the DropSendsNewProb
+    // is ignored, and there is no change to the dropSend
+    // probability.
+    UpdateDropSends bool
 
-	// probability of dropping a send.
-	// 0 => never drop a send (healthy).
-	// 1 => always drop a send (dead hardware).
-	DropSendsNewProb float64
+    // probability of dropping a send.
+    // 0 => never drop a send (healthy).
+    // 1 => always drop a send (dead hardware).
+    DropSendsNewProb float64
 }
 
     DropDeafSpec specifies a network/netcard 
@@ -251,7 +252,7 @@ func (s *Simnet) SubmitBatch(batch *SimnetBatch)
     SubmitBatch does not block.
 
 type SimnetBatch struct {
-	// Has unexported fields.
+    // Has unexported fields.
 }
     SimnetBatch is a proposed design for 
     sending in a batch of network
@@ -318,34 +319,34 @@ func (b *SimnetBatch) RepairHost(
     RepairHost repairs all the circuits on the host.
 
 type SimnetConnSummary struct {
-	OriginIsCli      bool
-	Origin           string
-	OriginState      Faultstate
-	OriginConnClosed bool
-	OriginPoweroff   bool
-	Target           string
-	TargetState      Faultstate
-	TargetConnClosed bool
-	TargetPoweroff   bool
-	DropSendProb     float64
-	DeafReadProb     float64
+    OriginIsCli      bool
+    Origin           string
+    OriginState      Faultstate
+    OriginConnClosed bool
+    OriginPoweroff   bool
+    Target           string
+    TargetState      Faultstate
+    TargetConnClosed bool
+    TargetPoweroff   bool
+    DropSendProb     float64
+    DeafReadProb     float64
 
-	// origin Q summary
-	Qs string
+    // origin Q summary
+    Qs string
 
-	// origin priority queues:
-	// Qs is the convenient/already stringified form of
-	// these origin queues.
-	// These allow stronger test assertions.  They are deep clones
-	// and so mostly race free except for the
-	// pointers mop.{origin,target,origTimerMop,msg,sendmop,readmop},
-	// access those only after the simnet has been shutdown.
-	// The proceed channel is always nil.
-	DroppedSendQ *pq
-	DeafReadQ    *pq
-	ReadQ        *pq
-	PreArrQ      *pq
-	TimerQ       *pq
+    // origin priority queues:
+    // Qs is the convenient/already stringified form of
+    // these origin queues.
+    // These allow stronger test assertions.  They are deep clones
+    // and so mostly race free except for the
+    // pointers mop.{origin,target,origTimerMop,msg,sendmop,readmop},
+    // access those only after the simnet has been shutdown.
+    // The proceed channel is always nil.
+    DroppedSendQ *pq
+    DeafReadQ    *pq
+    ReadQ        *pq
+    PreArrQ      *pq
+    TimerQ       *pq
 }
 
     SimnetConnSummary is part 
@@ -356,14 +357,14 @@ type SimnetConnSummary struct {
 func (z *SimnetConnSummary) String() (r string)
 
 type SimnetPeerStatus struct {
-	Name         string
-	Conn         []*SimnetConnSummary
-	Connmap      map[string]*SimnetConnSummary
-	ServerState  Faultstate
-	Poweroff     bool
-	LC           int64
-	ServerBaseID string
-	IsLoneCli    bool // and not really a peer server with auto-cli
+    Name         string
+    Conn         []*SimnetConnSummary
+    Connmap      map[string]*SimnetConnSummary
+    ServerState  Faultstate
+    Poweroff     bool
+    LC           int64
+    ServerBaseID string
+    IsLoneCli    bool // and not really a peer server with auto-cli
 }
 
     SimnetPeerStatus is a part of a SimnetSnapshot.
@@ -371,36 +372,36 @@ type SimnetPeerStatus struct {
 func (z *SimnetPeerStatus) String() (r string)
 
 type SimnetSnapshot struct {
-	Asof               time.Time
-	Loopi              int64
-	NetClosed          bool
-	GetSimnetStatusErr error
-	Cfg                SimNetConfig
-	PeerConnCount      int
-	LoneCliConnCount   int
+    Asof               time.Time
+    Loopi              int64
+    NetClosed          bool
+    GetSimnetStatusErr error
+    Cfg                SimNetConfig
+    PeerConnCount      int
+    LoneCliConnCount   int
 
-	// mop creation/finish data.
-	Xcountsn  int64       // number of mop issued
-	Xfinorder []int64     // finish order (nextMopSn at time of finish)
-	Xwhence   []string    // file:line creation place
-	Xkind     []mopkind   // send,read,timer,discard,...
-	Xissuetm  []time.Time // when issued
-	Xfintm    []time.Time // when finished
-	Xwho      []int
+    // mop creation/finish data.
+    Xcountsn  int64       // number of mop issued
+    Xfinorder []int64     // finish order (nextMopSn at time of finish)
+    Xwhence   []string    // file:line creation place
+    Xkind     []mopkind   // send,read,timer,discard,...
+    Xissuetm  []time.Time // when issued
+    Xfintm    []time.Time // when finished
+    Xwho      []int
 
-	Xhash string // hash of the sequence
+    Xhash string // hash of the sequence
 
-	ScenarioNum    int
-	ScenarioSeed   [32]byte
-	ScenarioTick   time.Duration
-	ScenarioMinHop time.Duration
-	ScenarioMaxHop time.Duration
+    ScenarioNum    int
+    ScenarioSeed   [32]byte
+    ScenarioTick   time.Duration
+    ScenarioMinHop time.Duration
+    ScenarioMaxHop time.Duration
 
-	Peer    []*SimnetPeerStatus
-	Peermap map[string]*SimnetPeerStatus
-	LoneCli map[string]*SimnetPeerStatus // not really a peer but meh.
+    Peer    []*SimnetPeerStatus
+    Peermap map[string]*SimnetPeerStatus
+    LoneCli map[string]*SimnetPeerStatus // not really a peer but meh.
 
-	// Has unexported fields.
+    // Has unexported fields.
 }
 
     SimnetSnapshot is returned by
@@ -425,7 +426,7 @@ func (z *SimnetSnapshot) String() (r string)
 func (snap *SimnetSnapshot) ToFile(nm string)
 
 type SimnetSnapshotter struct {
-	// Has unexported fields.
+    // Has unexported fields.
 }
 
 func (s *SimnetSnapshotter) GetSimnetSnapshot() *SimnetSnapshot
