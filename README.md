@@ -174,7 +174,8 @@ func (s *Simnet) AllHealthy(
     deliverDroppedSends bool,
     ) (err error)
     
-    AllHealthy heal all partitions, undoes all faults, 
+    AllHealthy heals all partitions, and
+    undoes all faults, 
     network wide. All circuits
     are returned to HEALTHY status. Their powerOff 
     status is not updated unless
