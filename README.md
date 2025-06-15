@@ -5,10 +5,9 @@ Image: simulacrum of the Go gopher happily toying with traffic.
 gosimnet
 ========
 
-gosimnet is a compact network simulator. It is minimal,
-with a small code base and only two imports, to make
-it useful for many test situations. It was written for 
-testing with the new Go
+gosimnet is a compact network simulator.
+
+gosimnet was written for testing with the new Go
 testing/synctest facility, but
 can run without it too. gosimnet implements the `net.Conn`
 interface to networks. The test file
