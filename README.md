@@ -45,6 +45,84 @@ You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...
 (from go doc)
 
 ~~~
+type Faultstate int
+
+    Faultstate is one of HEALTHY, FAULTY, 
+    ISOLATED, or FAULTY_ISOLATED.
+
+    FAULTY models network card problems. 
+    These can be either dropped sends or
+    deaf reads. The probability of each 
+    can be set independently. A card might
+    be able to send messages but only read 
+    incoming messages half the time,
+    for example; an asymmetric and 
+    intermittent failure mode.
+
+    ISOLATED models a dead network card or
+    switch port. 
+    While this can be modelled more
+    orthogonally as a collection of
+    individual card faults on either side of
+    switch (and may be implemented as 
+    such internally) it is a common enough
+    failure mode and test scenario that 
+    giving it a distinct name enhances the
+    API's usability and clarifies the 
+    scenario being simulated.
+
+    FAULTY_ISOLATED models network card 
+    problems alongside network switch
+    problem.
+
+    HEALTHY means the network and card 
+    are fully operational with respect to
+    this circuit. This does not imply 
+    that other circuits ending at the same
+    host, or between the same pair of 
+    hosts, are healthy too. A simhost 
+    server will typically host many 
+    circuit connections; at least 
+    one per connected peer server.
+
+    A circuit's powerOff status is 
+    independent of its Faultstate, so that
+    circuit faults like flakey network 
+    cards and network isolatation (dead
+    switches) survive (are not repaired 
+    by) a simple host or circuit reboot.
+
+    We reuse Faultstate for the whole 
+    server state, to keep things simple 
+    and to summarize the status of 
+    all circuits therein. If a simnode 
+    or Server is in powerOff, then all 
+    circuits terminating there are also 
+    in powerOff.
+
+const (
+	HEALTHY Faultstate = 0
+
+    // cruder than FAULTY. no comms with anyone else
+	ISOLATED Faultstate = 1 
+
+	// If a (deaf/drop) fault is applied 
+    // to a HEALTHY circuit,
+	// then the circuit is marked FAULTY.
+	// If a repair removes the last fault, 
+    // we change it back to HEALTHY.
+	FAULTY Faultstate = 2 // some conn may drop sends, be deaf to reads
+
+	// If a (deaf/drop) fault is 
+    // applied to an ISOLATED circuit,
+	// then the circuit is marked 
+    // FAULTY_ISOLATED. If a reapir removes 
+    // the last fault, we change it 
+    // back to ISOLATED.
+	FAULTY_ISOLATED Faultstate = 3
+)
+
+
 type Alteration int 
 
     Alteration flags are used in 
