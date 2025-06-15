@@ -45,6 +45,22 @@ You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...
 (from go doc)
 
 ~~~
+type Alteration int 
+
+    Alteration flags are used in 
+    AlterCircuit() calls to specify 
+    what change you want to a 
+    specific network simnode.
+
+const (
+	UNDEFINED Alteration = 0
+	SHUTDOWN  Alteration = 1
+	POWERON   Alteration = 2
+	ISOLATE   Alteration = 3
+	UNISOLATE Alteration = 4
+)
+
+
 type DropDeafSpec struct {
 
 	// false UpdateDeafReads means no change to deafRead
