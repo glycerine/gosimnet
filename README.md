@@ -34,6 +34,20 @@ You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...
 
 (from go doc)
 
+These pick out the net modeling stuff from the underlying rpc25519.
+For example, these are the package versions:
+
+https://pkg.go.dev/github.com/glycerine/rpc25519#Faultstate
+https://pkg.go.dev/github.com/glycerine/rpc25519#Alteration
+https://pkg.go.dev/github.com/glycerine/rpc25519#DropDeafSpec
+https://pkg.go.dev/github.com/glycerine/rpc25519#Simnet
+https://pkg.go.dev/github.com/glycerine/rpc25519#SimnetBatch
+https://pkg.go.dev/github.com/glycerine/rpc25519#SimnetConnSummary
+https://pkg.go.dev/github.com/glycerine/rpc25519#SimnetPeerStatus
+https://pkg.go.dev/github.com/glycerine/rpc25519#SimnetSnapshot
+https://pkg.go.dev/github.com/glycerine/rpc25519#SimnetSnapshotter
+
+
 ~~~
 type Faultstate int
 
