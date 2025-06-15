@@ -101,7 +101,7 @@ func (s *Simnet) AllHealthy(
     status is not updated unless
     powerOnIfOff is also true. See also RepairSimnode 
     for single simnode repair.
-    .
+
 
 func (s *Simnet) AlterCircuit(
      simnodeName string, 
@@ -156,7 +156,7 @@ func (s *Simnet) RepairCircuit(
     actions, if any. It does not change
     an isolated simnode's isolation unless 
     unIsolate is also true. See also
-    RepairHost, AllHealthy. .
+    RepairHost, AllHealthy.
 
 func (s *Simnet) RepairHost(
      originName string, 
@@ -270,6 +270,11 @@ type SimnetConnSummary struct {
 	TimerQ       *pq
 }
 
+    SimnetConnSummary is part 
+    of a SimnetSnapshot. 
+    It conveys the full state of a
+    net.Conn connection endpoint.
+
 func (z *SimnetConnSummary) String() (r string)
 
 type SimnetPeerStatus struct {
@@ -282,6 +287,8 @@ type SimnetPeerStatus struct {
 	ServerBaseID string
 	IsLoneCli    bool // and not really a peer server with auto-cli
 }
+
+    SimnetPeerStatus is a part of a SimnetSnapshot.
 
 func (z *SimnetPeerStatus) String() (r string)
 
@@ -317,6 +324,11 @@ type SimnetSnapshot struct {
 
 	// Has unexported fields.
 }
+
+    SimnetSnapshot is returned by
+    SimnetSnapshotter.GetSimnetSnapshot(),
+    and gives a picture of the
+    network at a moment in time.
 
 func (z *SimnetSnapshot) LongString() (r string)
 
