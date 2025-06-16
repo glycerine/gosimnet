@@ -464,7 +464,8 @@ are not really needed as a separate concept.
 
 Servers and clients can be "multi-homed"
 trivially, as their endpoint address is any 
-string they choose.
+string you choose; so long as they are globally
+unique.
 
 ---
 Author: Jason E. Aten, Ph.D.
