@@ -464,9 +464,13 @@ are not really needed as a separate concept.
 
 Servers and clients can be "multi-homed"
 trivially, as their endpoint address is any 
-string you choose; so long as they are globally
-unique.
+string you choose; so long as they are
+unique within a given simnet.
 
+For convenience, the rpc25519.NewCallID(shortName) 
+call can be used to generate a long (but 
+not cryptographically) random 21 byte ID that will 
+be unique with very high probability.
 ---
 Author: Jason E. Aten, Ph.D.
 
