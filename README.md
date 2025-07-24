@@ -77,7 +77,7 @@ type Faultstate int
 
     FAULTY_ISOLATED models network card 
     problems alongside network switch
-    problem.
+    problems.
 
     HEALTHY means the network and card 
     are fully operational with respect to
