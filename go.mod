@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/glycerine/idem v0.20.5
 	github.com/glycerine/rbtree v0.2.1
-	github.com/glycerine/rpc25519 v1.28.17
+	github.com/glycerine/rpc25519 v1.30.0
 )
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
