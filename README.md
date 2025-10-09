@@ -392,7 +392,6 @@ type SimnetSnapshot struct {
     Xkind     []mopkind   // send,read,timer,discard,...
     Xissuetm  []time.Time // when issued
     Xfintm    []time.Time // when finished
-    Xwho      []int
 
     Xhash string // hash of the sequence
 
