@@ -28,6 +28,12 @@ https://github.com/glycerine/rpc25519/blob/master/jsync/rsync_simnet_test.go
 
 https://github.com/glycerine/rpc25519/blob/master/simgrid_test.go
 
+Go version 1.25 or greater is required to access
+the released testing/synctest package.
+
+No special build tags are required now to 
+access synctest.
+
 # network modeling API summary
 
 You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...

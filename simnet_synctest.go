@@ -1,5 +1,3 @@
-//go:build goexperiment.synctest
-
 package gosimnet
 
 import (
@@ -14,12 +12,12 @@ func init() {
 	fmt.Printf("faketime = %v\n", faketime)
 }
 
-func bubbleOrNot(f func()) {
-	synctest.Run(f)
+func bubbleOrNot(t *testing.T, f func(t *testing.T)) {
+	synctest.Test(t, f)
 }
 
-func onlyBubbled(t *testing.T, f func()) {
-	synctest.Run(f)
+func onlyBubbled(t *testing.T, f func(t *testing.T)) {
+	synctest.Test(t, f)
 }
 
 func synctestWait_LetAllOtherGoroFinish() {

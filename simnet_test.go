@@ -1,8 +1,5 @@
 package gosimnet
 
-// build/run with:
-// GOTRACEBACK=all GOEXPERIMENT=synctest go test -v
-
 import (
 	"bufio"
 	//"context"
@@ -19,7 +16,7 @@ import (
 // basic gosimnet operations Listen/Accept, Dial, NewTimer
 func Test101_gosimnet_basics(t *testing.T) {
 
-	bubbleOrNot(func() {
+	bubbleOrNot(t, func(t *testing.T) {
 
 		shutdown := make(chan struct{})
 		defer close(shutdown)
