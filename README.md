@@ -34,6 +34,17 @@ the released testing/synctest package.
 No special build tags are required now to 
 access synctest.
 
+# Seeding your Deterministic Simulation Testing (DST) run
+
+Gosimnet supports deterministic replay for
+Deterministic Simulation Testing (DST). The pseudo random
+number generator seed for a run can be set as follows.
+
+~~~
+cfg := NewSimNetConfig()
+cfg.SetScenarioSeed(43) // seed can be any uint64
+~~~
+
 # network modeling API summary
 
 You can use rpc25519.Config.GetSimnet() to get an *rpc.Simnet, and then...

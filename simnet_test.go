@@ -22,6 +22,7 @@ func Test101_gosimnet_basics(t *testing.T) {
 		defer close(shutdown)
 
 		cfg := NewSimNetConfig()
+		cfg.SetScenarioSeed(43) // seed can be any uint64
 		network := NewSimNet(cfg)
 		defer network.Close()
 		srv := network.NewSimServer("srv_" + t.Name())
