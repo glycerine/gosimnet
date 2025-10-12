@@ -55,6 +55,10 @@ github.com/glycerine/rpc25519 v1.30.0 h1:h22npfi1z3/sLK6Lqgpy5Z5neMzYDeJwJX8pe+Q
 github.com/glycerine/rpc25519 v1.30.0/go.mod h1:2HgE3QYvp7TW58fqD96CO7OED3vCW0XfhzPX+nNIKBM=
 github.com/glycerine/rpc25519 v1.30.4 h1:Zstg2tN8ZMqDB0pIs2UFvPD3ugtYfLtqLOYLO9dgKis=
 github.com/glycerine/rpc25519 v1.30.4/go.mod h1:2HgE3QYvp7TW58fqD96CO7OED3vCW0XfhzPX+nNIKBM=
+github.com/glycerine/rpc25519 v1.31.0 h1:3cSx+rJy9p9PxcZZv55qnvkZwTt0zWajHSV5xbNqZyg=
+github.com/glycerine/rpc25519 v1.31.0/go.mod h1:2HgE3QYvp7TW58fqD96CO7OED3vCW0XfhzPX+nNIKBM=
+github.com/glycerine/rpc25519 v1.31.1 h1:Z95Yn6WctOM94FHSpeS5nw9BP1mAHPGsxaeXKq+MSBc=
+github.com/glycerine/rpc25519 v1.31.1/go.mod h1:2HgE3QYvp7TW58fqD96CO7OED3vCW0XfhzPX+nNIKBM=
 github.com/glycerine/zygomys/v9 v9.1.2 h1:Rnk+l5aV6JailGp5BzrgYJU7wC+XKU3/NDOTEJMo3K4=
 github.com/glycerine/zygomys/v9 v9.1.2/go.mod h1:hckAUIPikusS9epDmMmEkfXeOK2qvWhmeVK6Su8y/1k=
 github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=
