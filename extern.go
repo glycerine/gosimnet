@@ -116,7 +116,7 @@ func (s *SimNet) GetSimnetSnapshot() (snap *rpc.SimnetSnapshot) {
 		s.net = s.cfg.GetSimnet()
 	}
 	if s.net != nil {
-		return s.net.GetSimnetSnapshot()
+		return s.net.GetSimnetSnapshot(true)
 	}
 	return nil
 }
