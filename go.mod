@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/glycerine/idem v0.20.5
 	github.com/glycerine/rbtree v0.2.1
-	github.com/glycerine/rpc25519 v1.38.27
+	github.com/glycerine/rpc25519 v1.39.5
 )
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
@@ -46,5 +46,6 @@ require (
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/term v0.39.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 )

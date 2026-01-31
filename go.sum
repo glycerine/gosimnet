@@ -75,6 +75,8 @@ github.com/glycerine/rpc25519 v1.38.26 h1:gDD1zhc2uQQmIy204qbn6a4RB3t2/GG4I4nIUs
 github.com/glycerine/rpc25519 v1.38.26/go.mod h1:NOExgbojtydtFPWEzPgWfhx8aAZ698ksglXW0HsQDwQ=
 github.com/glycerine/rpc25519 v1.38.27 h1:osuAeJsVuAvkBQX1ipr7G7KMVLVY90RhSY+vs0bIxHM=
 github.com/glycerine/rpc25519 v1.38.27/go.mod h1:NOExgbojtydtFPWEzPgWfhx8aAZ698ksglXW0HsQDwQ=
+github.com/glycerine/rpc25519 v1.39.5 h1:pDbsfsApfVzvSYYfs1h2QCZPZNSqreAJlIpPLLlEymw=
+github.com/glycerine/rpc25519 v1.39.5/go.mod h1:/rhf2l3C2fQYNt8klyWtbtdgr5Jgl9xH0kutxwihXC0=
 github.com/glycerine/zygomys/v9 v9.1.2 h1:Rnk+l5aV6JailGp5BzrgYJU7wC+XKU3/NDOTEJMo3K4=
 github.com/glycerine/zygomys/v9 v9.1.2/go.mod h1:hckAUIPikusS9epDmMmEkfXeOK2qvWhmeVK6Su8y/1k=
 github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 h1:tfuBGBXKqDEevZMzYi5KSi8KkcZtzBcTgAUUtapy0OI=
@@ -159,6 +161,8 @@ golang.org/x/term v0.37.0 h1:8EGAD0qCmHYZg6J17DvsMy9/wJ7/D/4pV/wfnld5lTU=
 golang.org/x/term v0.37.0/go.mod h1:5pB4lxRNYYVZuTLmy8oR2BH8dflOR+IbTYFD8fi3254=
 golang.org/x/term v0.39.0 h1:RclSuaJf32jOqZz74CkPA9qFuVTX7vhLlpfj/IGWlqY=
 golang.org/x/term v0.39.0/go.mod h1:yxzUCTP/U+FzoxfdKmLaA0RV1WgE0VY7hXBwKtY/4ww=
+golang.org/x/time v0.14.0 h1:MRx4UaLrDotUKUdCIqzPC48t1Y9hANFKIRpNx+Te8PI=
+golang.org/x/time v0.14.0/go.mod h1:eL/Oa2bBBK0TkX57Fyni+NgnyQQN4LitPmob2Hjnqw4=
 golang.org/x/tools v0.30.0 h1:BgcpHewrV5AUp2G9MebG4XPFI1E2W41zU1SaqVA9vJY=
 golang.org/x/tools v0.30.0/go.mod h1:c347cR/OJfw5TI+GfX7RUPNMdDRRbjvYTS0jPyvsVtY=
 golang.org/x/tools v0.36.0 h1:kWS0uv/zsvHEle1LbV5LE8QujrxB3wfQyxHfhOk0Qkg=
