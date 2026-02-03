@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/glycerine/idem v0.20.5
 	github.com/glycerine/rbtree v0.2.1
-	github.com/glycerine/rpc25519 v1.39.5
+	github.com/glycerine/rpc25519 v1.40.7
 )
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
@@ -33,7 +33,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.9.5 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
-	github.com/quic-go/quic-go v0.58.0 // indirect
+	github.com/quic-go/quic-go v0.59.0 // indirect
 	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
 	github.com/shurcooL/go-goon v1.0.0 // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
