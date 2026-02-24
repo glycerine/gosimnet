@@ -42,7 +42,29 @@ number generator seed for a run can be set as follows.
 
 ~~~
 cfg := NewSimNetConfig()
-cfg.SetScenarioSeed(43) // seed can be any uint64
+cfg.InitialSimnetScenario = 43 
+~~~
+
+For rpc25519 setup activities that 
+happen before the simnet is started,
+we also have the rpc25519.PrepareForSimnet() 
+facility which will seed the 
+pseudo random number generator used by 
+rpc25519.NewCallID() to obtain random
+call and node identifiers.
+
+~~~
+package rpc25519
+
+// PrepareForSimnet will re-seed our globalPRNG
+// if int64seed is > 0. Otherwise we are a no-op,
+// and altered will come back false. This is
+// to avoid repeated output from the PRNG, since
+// it was initialized with zero at init() time.
+//
+// This helps tube fuzz_test to get more deterministic
+// NewCallID() responses from hdr.go.
+func PrepareForSimnet(int64seed int64, allowRepeat bool) (altered bool) 
 ~~~
 
 # network modeling API summary
