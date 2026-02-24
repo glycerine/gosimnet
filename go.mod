@@ -3,9 +3,9 @@ module github.com/glycerine/gosimnet
 go 1.24.3
 
 require (
-	github.com/glycerine/idem v0.20.5
+	github.com/glycerine/idem v0.20.7
 	github.com/glycerine/rbtree v0.2.1
-	github.com/glycerine/rpc25519 v1.40.7
+	github.com/glycerine/rpc25519 v1.43.2
 )
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
@@ -24,6 +24,7 @@ require (
 	github.com/glycerine/liner v0.0.0-20160121172638-72909af234e0 // indirect
 	github.com/glycerine/loquet v0.0.19 // indirect
 	github.com/glycerine/one_tree_rwmut v1.0.0 // indirect
+	github.com/glycerine/rate v0.0.1 // indirect
 	github.com/glycerine/zygomys/v9 v9.1.2 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
