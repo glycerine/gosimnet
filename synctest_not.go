@@ -1,29 +1,29 @@
-//go:build synctest
+//go:build !synctest
 
 package gosimnet
 
 import (
 	"fmt"
 	"testing"
-	"testing/synctest"
 )
 
 var _ = fmt.Printf
 
-const faketime bool = true
+const faketime bool = false
 
 //func init() {
 //	fmt.Printf("gosimnet faketime = %v\n", faketime)
 //}
 
+func synctestWait_LetAllOtherGoroFinish() {}
+
 func bubbleOrNot(t *testing.T, f func(t *testing.T)) {
-	synctest.Test(t, f)
+	f(t)
 }
 
 func onlyBubbled(t *testing.T, f func(t *testing.T)) {
-	synctest.Test(t, f)
-}
-
-func synctestWait_LetAllOtherGoroFinish() {
-	synctest.Wait()
+	if raceDetectorOn {
+		return // the print below is racey inside the testing package.
+	}
+	t.Skip("onlyBubbled: skipping test")
 }
