@@ -1,8 +1,8 @@
 module github.com/glycerine/gosimnet
 
-go 1.24.3
+go 1.25.3
 
-require github.com/glycerine/rpc25519 v1.44.17
+require github.com/glycerine/rpc25519 v1.46.0
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
 
@@ -24,7 +24,7 @@ require (
 	github.com/glycerine/rate v0.0.1 // indirect
 	github.com/glycerine/rbtree v0.2.1 // indirect
 	github.com/glycerine/zygomys/v9 v9.6.2 // indirect
-	github.com/klauspost/compress v1.18.2 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
