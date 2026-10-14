@@ -2,7 +2,7 @@ module github.com/glycerine/gosimnet
 
 go 1.26.0
 
-require github.com/glycerine/rpc25519 v1.47.3
+require github.com/glycerine/rpc25519 v1.48.0
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
 
@@ -13,7 +13,7 @@ require (
 	github.com/glycerine/blake2b v0.0.0-20151022103502-3c8c640cd7be // indirect
 	github.com/glycerine/blake3 v1.5.2 // indirect
 	github.com/glycerine/fwd v1.1.4-beta.jea // indirect
-	github.com/glycerine/greenpack v0.541.0 // indirect
+	github.com/glycerine/greenpack v0.542.0 // indirect
 	github.com/glycerine/idem v0.20.7 // indirect
 	github.com/glycerine/ipaddr v0.2.7 // indirect
 	github.com/glycerine/liner v0.0.0-20160121172638-72909af234e0 // indirect
