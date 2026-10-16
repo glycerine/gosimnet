@@ -2,7 +2,7 @@ module github.com/glycerine/gosimnet
 
 go 1.26.0
 
-require github.com/glycerine/rpc25519 v1.48.0
+require github.com/glycerine/rpc25519 v1.48.3
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
 
