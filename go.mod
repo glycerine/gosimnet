@@ -2,7 +2,7 @@ module github.com/glycerine/gosimnet
 
 go 1.27.3
 
-require github.com/glycerine/rpc25519 v1.52.0
+require github.com/glycerine/rpc25519 v1.54.0
 
 //replace github.com/glycerine/rpc25519 => ../rpc25519
 
@@ -31,8 +31,8 @@ require (
 	github.com/shurcooL/go-goon v1.0.0 // indirect
 	github.com/tinylib/msgp v1.1.2 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/net v0.60.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
 )
